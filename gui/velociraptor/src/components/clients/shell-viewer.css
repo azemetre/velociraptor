@@ -62,7 +62,6 @@ div.dt-buttons {
     overflow: auto;
 }
 
-
 .shell-cell.collapsed {
     max-height: 24em;
     width: 100%;
@@ -89,7 +88,8 @@ div.dt-buttons {
     display: hidden;
 }
 
-.notebook-output pre, .notebook-input pre {
+.notebook-output pre,
+.notebook-input pre {
     display: block;
     padding: 8px;
     margin: 0 0 8.5px;
@@ -105,7 +105,7 @@ div.dt-buttons {
 
 .shell-results {
     /* Toolbar - padding - host toolbar - shell command controls - footer */
-    max-height: calc(100vh - 50px - 20px - 47px -  66px - 40px);
+    max-height: calc(100vh - 50px - 20px - 47px - 66px - 40px);
     overflow-y: auto;
     padding-bottom: 100px;
 }

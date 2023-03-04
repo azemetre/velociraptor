@@ -1,15 +1,13 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from "react";
+import PropTypes from "prop-types";
 
-import VeloPagedTable from '../core/paged-table.jsx';
-import _ from 'lodash';
+import VeloPagedTable from "../core/paged-table.jsx";
+import _ from "lodash";
 
-import FormControl from 'react-bootstrap/FormControl';
+import FormControl from "react-bootstrap/FormControl";
 
 function getFlowState(flow) {
-    return {flow_id: flow.session_id,
-            active_time: flow.active_time,
-            total_collected_rows: flow.total_collected_rows};
+    return { flow_id: flow.session_id, active_time: flow.active_time, total_collected_rows: flow.total_collected_rows };
 }
 
 export default class FlowResults extends React.Component {
@@ -19,7 +17,7 @@ export default class FlowResults extends React.Component {
 
     componentDidMount = () => {
         this.fetchRows();
-    }
+    };
 
     // We try really hard to not render the table too often. Tables
     // maintain their own state for e.g. hidden columns and each time
@@ -37,13 +35,13 @@ export default class FlowResults extends React.Component {
 
     state = {
         params: {},
-    }
+    };
 
     setArtifact = (artifact) => {
         let params = Object.assign({}, this.state.params);
         params.artifact = artifact;
-        this.setState({params: params});
-    }
+        this.setState({ params: params });
+    };
 
     fetchRows = () => {
         let client_id = this.props.flow && this.props.flow.client_id;
@@ -51,7 +49,7 @@ export default class FlowResults extends React.Component {
         let artifacts_with_results = this.props.flow && this.props.flow.artifacts_with_results;
 
         if (!client_id || _.isEmpty(artifacts_with_results) || !flow_id) {
-            this.setState({params: {}});
+            this.setState({ params: {} });
             return;
         }
 
@@ -65,36 +63,37 @@ export default class FlowResults extends React.Component {
             flow_id: this.props.flow.session_id,
             artifact: selectedArtifact,
         };
-        this.setState({params: params});
-    }
+        this.setState({ params: params });
+    };
 
     render() {
         let artifacts_with_results = this.props.flow && this.props.flow.artifacts_with_results;
         if (_.isEmpty(artifacts_with_results)) {
-            return <div className="no-content">
-                     No Data Available.
-                   </div>;
+            return <div className="no-content">No Data Available.</div>;
         }
 
         return (
             <>
-              <FormControl as="select" size="sm"
-                           ref={ (el) => this.element=el }
-                           onChange={() => this.setArtifact(this.element.value)}>
-                {_.map(artifacts_with_results, function(item, idx) {
-                    return <option key={idx}> {item} </option>;
-                })}
-              </FormControl>
-              <VeloPagedTable
-                env={{
-                    client_id: this.props.flow.client_id,
-                    flow_id: this.props.flow.session_id,
-                }}
-                className="col-12"
-                params={this.state.params}
-                version={getFlowState(this.props.flow)}
-              />
+                <FormControl
+                    as="select"
+                    size="sm"
+                    ref={(el) => (this.element = el)}
+                    onChange={() => this.setArtifact(this.element.value)}
+                >
+                    {_.map(artifacts_with_results, function (item, idx) {
+                        return <option key={idx}> {item} </option>;
+                    })}
+                </FormControl>
+                <VeloPagedTable
+                    env={{
+                        client_id: this.props.flow.client_id,
+                        flow_id: this.props.flow.session_id,
+                    }}
+                    className="col-12"
+                    params={this.state.params}
+                    version={getFlowState(this.props.flow)}
+                />
             </>
         );
     }
-};
+}

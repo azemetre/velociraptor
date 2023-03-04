@@ -1,5 +1,4 @@
 const getPagination = (props) => {
-
     let arr = [];
     let startAt = props.currentPage - Math.floor(props.showMax / 2);
     let isPositive = () => Math.sign(startAt);
@@ -11,11 +10,11 @@ const getPagination = (props) => {
 
     for (let i = startAt; i < max; i++) {
         arr.push({
-            page:  i,
-            text:  i,
+            page: i,
+            text: i,
             isCurrent: isCurrent(i, props.currentPage),
             class: isCurrent(i, props.currentPage) ? props.activeClass : props.defaultClass,
-            href: i === 1 ? props.href && props.pageOneHref : props.href && props.href.replace('*', startAt + i)
+            href: i === 1 ? props.href && props.pageOneHref : props.href && props.href.replace("*", startAt + i),
         });
     }
 
@@ -33,16 +32,32 @@ const getPagination = (props) => {
     }
 
     return arr;
-}
+};
 
 const isCurrent = (page, currentPage) => currentPage === page;
 
 const addThreeDots = (arr, props) => {
-    let threeDotsObj = { page: false, text: '...', isCurrent: false, class: props.disabledClass };
-    arr[0].page !== 1 && arr.unshift(threeDotsObj) && arr.unshift({ page: 1, text: 1, isCurrent: false, class: props.defaultClass, href: props.pageOneHref ? props.pageOneHref : props.href && props.href.replace('*', 1) });
-    arr[arr.length - 1].page !== props.totalPages && arr.push(threeDotsObj) && arr.push({ page: props.totalPages, text: props.totalPages, isCurrent: false, class: props.defaultClass, href: props.href && props.href.replace('*', props.totalPages) });
+    let threeDotsObj = { page: false, text: "...", isCurrent: false, class: props.disabledClass };
+    arr[0].page !== 1 &&
+        arr.unshift(threeDotsObj) &&
+        arr.unshift({
+            page: 1,
+            text: 1,
+            isCurrent: false,
+            class: props.defaultClass,
+            href: props.pageOneHref ? props.pageOneHref : props.href && props.href.replace("*", 1),
+        });
+    arr[arr.length - 1].page !== props.totalPages &&
+        arr.push(threeDotsObj) &&
+        arr.push({
+            page: props.totalPages,
+            text: props.totalPages,
+            isCurrent: false,
+            class: props.defaultClass,
+            href: props.href && props.href.replace("*", props.totalPages),
+        });
     return arr;
-}
+};
 
 const addNext = (arr, props) => {
     let nextObj = {
@@ -50,11 +65,11 @@ const addNext = (arr, props) => {
         text: props.nextText,
         isCurrent: false,
         class: props.currentPage + 1 > props.totalPages && props.disabledClass,
-        href: props.href && props.href.replace('*', props.currentPage + 1)
+        href: props.href && props.href.replace("*", props.currentPage + 1),
     };
     arr.push(nextObj);
     return arr;
-}
+};
 
 const addPrev = (arr, props) => {
     let prevObj = {
@@ -62,12 +77,10 @@ const addPrev = (arr, props) => {
         text: props.prevText,
         isCurrent: false,
         class: props.currentPage - 1 < 1 && props.disabledClass,
-        href: props.href && props.href.replace('*', props.currentPage - 1)
+        href: props.href && props.href.replace("*", props.currentPage - 1),
     };
     arr.unshift(prevObj);
     return arr;
-}
+};
 
-export {
-    getPagination
-}
+export { getPagination };

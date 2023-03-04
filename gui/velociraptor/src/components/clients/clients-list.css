@@ -1,14 +1,14 @@
 .icon-small {
-  width: 14px;
-  margin-top: 5px;
-  margin-bottom: 5px;
+    width: 14px;
+    margin-top: 5px;
+    margin-bottom: 5px;
 }
 
 button.btn.online-status {
-  background: none;
+    background: none;
 }
 
 .deleted-client-list {
-  overflow-y: auto;
-  max-height: 400px;
+    overflow-y: auto;
+    max-height: 400px;
 }

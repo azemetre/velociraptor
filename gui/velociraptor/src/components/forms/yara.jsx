@@ -1,18 +1,20 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import VeloAce from '../core/ace.jsx';
-import language_tools from 'ace-builds/src-min-noconflict/ext-language_tools.js';
+import React from "react";
+import PropTypes from "prop-types";
+import VeloAce from "../core/ace.jsx";
+import language_tools from "ace-builds/src-min-noconflict/ext-language_tools.js";
 import "./regex.css";
-import T from '../i8n/i8n.jsx';
+import T from "../i8n/i8n.jsx";
 
-import _ from 'lodash';
+import _ from "lodash";
 
-let gcompletions=[
-    {name: "rule template",
-     trigger: "r",
-     value: "rule Hit {\n   strings:\n     $a = \"keyword\" nocase wide ascii\n    condition:\n      any of them\n}\n",
-     cursor_offset: 5,
-     description: "Yara Rule Template"},
+let gcompletions = [
+    {
+        name: "rule template",
+        trigger: "r",
+        value: 'rule Hit {\n   strings:\n     $a = "keyword" nocase wide ascii\n    condition:\n      any of them\n}\n',
+        cursor_offset: 5,
+        description: "Yara Rule Template",
+    },
 ];
 
 let Completer = {
@@ -23,7 +25,7 @@ let Completer = {
     getCompletions: (editor, session, pos, prefix, callback) => {
         let completions = [];
 
-        _.each(gcompletions, x=>{
+        _.each(gcompletions, (x) => {
             if (prefix === "?" || x.trigger === prefix) {
                 let completion = {
                     caption: x.name,
@@ -42,23 +44,22 @@ let Completer = {
 
                 if (x.cursor_offset) {
                     completion.completer = {
-                        insertMatch: function(editor, data) {
+                        insertMatch: function (editor, data) {
                             let pos = editor.selection.getCursor();
                             let text = editor.getValue();
                             let rows = text.split("\n");
                             let current_row = rows[pos.row];
 
                             // Strip the trigger from the match.
-                            let new_row = current_row.substring(
-                                0, pos.column - prefix.length) +
+                            let new_row =
+                                current_row.substring(0, pos.column - prefix.length) +
                                 data.value +
                                 current_row.substring(pos.column);
                             rows[pos.row] = new_row;
 
                             editor.setValue(rows.join("\n"));
-                            editor.selection.moveTo(
-                                pos.row, pos.column + x.cursor_offset - 1);
-                        }
+                            editor.selection.moveTo(pos.row, pos.column + x.cursor_offset - 1);
+                        },
                     };
                 }
 
@@ -66,9 +67,8 @@ let Completer = {
             }
         });
         callback(null, completions);
-    }
+    },
 };
-
 
 export default class YaraEditor extends React.Component {
     static propTypes = {
@@ -90,26 +90,28 @@ export default class YaraEditor extends React.Component {
             showGutter: false,
             maxLines: 25,
         });
-        this.setState({ace: ace});
+        this.setState({ ace: ace });
     };
 
-    setValue = value=>{
+    setValue = (value) => {
         // Todo: Verify the yara rule somehow.
         this.props.setValue(value);
-    }
+    };
 
     render() {
         return (
             <>
-              <div>
-                <VeloAce text={this.props.value}
-                         focus={false}
-                         className="regex-form"
-                         aceConfig={this.aceConfig}
-                         onChange={this.setValue}
-                         mode="yara" />
-              </div>
+                <div>
+                    <VeloAce
+                        text={this.props.value}
+                        focus={false}
+                        className="regex-form"
+                        aceConfig={this.aceConfig}
+                        onChange={this.setValue}
+                        mode="yara"
+                    />
+                </div>
             </>
         );
     }
-};
+}

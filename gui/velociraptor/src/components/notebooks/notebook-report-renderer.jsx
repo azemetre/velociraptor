@@ -1,21 +1,22 @@
-import _ from 'lodash';
+import _ from "lodash";
 
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from "react";
+import PropTypes from "prop-types";
 
-import parse from 'html-react-parser';
-import VeloTable from '../core/table.jsx';
+import parse from "html-react-parser";
+import VeloTable from "../core/table.jsx";
 import TimelineRenderer from "../timeline/timeline.jsx";
-import { VeloLineChart, VeloTimeChart } from '../artifacts/line-charts.jsx';
-import { NotebookLineChart, NotebookTimeChart,
-         NotebookScatterChart, NotebookBarChart
-       } from './notebook-chart-renderer.jsx';
+import { VeloLineChart, VeloTimeChart } from "../artifacts/line-charts.jsx";
+import {
+    NotebookLineChart,
+    NotebookTimeChart,
+    NotebookScatterChart,
+    NotebookBarChart,
+} from "./notebook-chart-renderer.jsx";
 
-import NotebookTableRenderer from './notebook-table-renderer.jsx';
+import NotebookTableRenderer from "./notebook-table-renderer.jsx";
 
-
-const parse_param = domNode=>JSON.parse(decodeURIComponent(
-    domNode.attribs.params || "{}"));
+const parse_param = (domNode) => JSON.parse(decodeURIComponent(domNode.attribs.params || "{}"));
 
 export default class NotebookReportRenderer extends React.Component {
     static propTypes = {
@@ -26,30 +27,28 @@ export default class NotebookReportRenderer extends React.Component {
     };
 
     // Notebook charts make API calls to actually get their data.
-    maybeProcessNotebookChart = domNode=>{
+    maybeProcessNotebookChart = (domNode) => {
         switch (domNode.name) {
-        case "notebook-line-chart":
-            return <NotebookLineChart params={parse_param(domNode)} />;
+            case "notebook-line-chart":
+                return <NotebookLineChart params={parse_param(domNode)} />;
 
-        case "notebook-bar-chart":
-            return <NotebookBarChart params={parse_param(domNode)} />;
+            case "notebook-bar-chart":
+                return <NotebookBarChart params={parse_param(domNode)} />;
 
-        case "notebook-scatter-chart":
-            return <NotebookScatterChart params={parse_param(domNode)} />;
+            case "notebook-scatter-chart":
+                return <NotebookScatterChart params={parse_param(domNode)} />;
 
-        case "notebook-time-chart":
-            return <NotebookTimeChart params={parse_param(domNode)} />;
+            case "notebook-time-chart":
+                return <NotebookTimeChart params={parse_param(domNode)} />;
 
-        default:
-            return null;
-        };
+            default:
+                return null;
+        }
     };
 
     // Inline charts contain their data in the HTML itself.
-    maybeProcessInlineChart = domNode=>{
-        if (_.isEmpty(domNode.attribs) ||
-            _.isEmpty(domNode.attribs.value) ||
-            _.isEmpty(domNode.attribs.params)) {
+    maybeProcessInlineChart = (domNode) => {
+        if (_.isEmpty(domNode.attribs) || _.isEmpty(domNode.attribs.value) || _.isEmpty(domNode.attribs.params)) {
             return null;
         }
 
@@ -61,25 +60,21 @@ export default class NotebookReportRenderer extends React.Component {
         let data = this.state.data[match[1]];
         let rows = JSON.parse(data.Response);
 
-        switch  (domNode.name) {
-        case "grr-line-chart":
-                    return <VeloLineChart data={rows}
-                                          columns={data.Columns}
-                                          params={parse_param(domNode)} />;
-        case  "time-chart":
-                    return <VeloTimeChart data={rows}
-                                          columns={data.Columns}
-                                          params={parse_param(domNode)} />;
+        switch (domNode.name) {
+            case "grr-line-chart":
+                return <VeloLineChart data={rows} columns={data.Columns} params={parse_param(domNode)} />;
+            case "time-chart":
+                return <VeloTimeChart data={rows} columns={data.Columns} params={parse_param(domNode)} />;
 
-        default:
-            return null;
-        };
-    }
+            default:
+                return null;
+        }
+    };
 
     render() {
         let output = this.props.cell && this.props.cell.output;
         if (!output) {
-            return <hr/>;
+            return <hr />;
         }
 
         let template = parse(this.props.cell.output, {
@@ -87,46 +82,39 @@ export default class NotebookReportRenderer extends React.Component {
                 // A table which contains the data inline.
                 if (domNode.name === "inline-table-viewer") {
                     try {
-                        let data = JSON.parse(this.props.cell.data || '{}');
+                        let data = JSON.parse(this.props.cell.data || "{}");
                         let value = decodeURIComponent(domNode.attribs.value || "");
                         let response = data[value] || {};
                         let rows = JSON.parse(response.Response);
-                        return (
-                            <VeloTable
-                              env={this.props.env}
-                              rows={rows}
-                              columns={response.Columns}
-                            />
-                        );
-                    } catch(e) {
-
-                    };
+                        return <VeloTable env={this.props.env} rows={rows} columns={response.Columns} />;
+                    } catch (e) {}
                 }
 
                 if (domNode.name === "grr-timeline") {
                     let name = decodeURIComponent(domNode.attribs.name || "");
                     return (
                         <TimelineRenderer
-                          notebook_id={this.props.notebook_id}
-                          name={name}
-                          params={parse_param(domNode)} />
+                            notebook_id={this.props.notebook_id}
+                            name={name}
+                            params={parse_param(domNode)}
+                        />
                     );
-                };
+                }
 
                 // A tag that loads a table from a notebook cell.
                 if (domNode.name === "grr-csv-viewer") {
                     try {
                         return (
                             <NotebookTableRenderer
-                              env={this.props.env}
-                              refresh={this.props.refresh}
-                              params={parse_param(domNode)}
+                                env={this.props.env}
+                                refresh={this.props.refresh}
+                                params={parse_param(domNode)}
                             />
                         );
-                    } catch(e) {
+                    } catch (e) {
                         return domNode;
                     }
-                };
+                }
 
                 let res = this.maybeProcessNotebookChart(domNode);
                 if (res) {
@@ -139,10 +127,8 @@ export default class NotebookReportRenderer extends React.Component {
                 }
 
                 return domNode;
-            }
+            },
         });
-        return (
-            <div  className="report-viewer">{template}</div>
-        );
+        return <div className="report-viewer">{template}</div>;
     }
-};
+}

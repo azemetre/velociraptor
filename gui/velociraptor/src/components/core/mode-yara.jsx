@@ -1,18 +1,17 @@
-
 // VQL mode is based on SQL mode but adds some more rules.
 export class YaraHighlightRules extends window.ace.acequire("ace/mode/text_highlight_rules").TextHighlightRules {
     constructor() {
         super();
 
         this.$rules = {
-            "start" : [
+            start: [
                 {
                     token: "keyword",
                     regex: "rule",
                     next: "rule_name",
                 },
             ],
-            "rule_name": [
+            rule_name: [
                 {
                     token: "entity.name",
                     regex: "[a-zA-Z0-9_]+",
@@ -21,9 +20,9 @@ export class YaraHighlightRules extends window.ace.acequire("ace/mode/text_highl
                     token: "paren.lparen",
                     regex: "[{]",
                     next: "rule_body",
-                }
+                },
             ],
-            "rule_body": [
+            rule_body: [
                 {
                     token: "paren.rparen",
                     regex: "[}]",
@@ -45,13 +44,11 @@ export class YaraHighlightRules extends window.ace.acequire("ace/mode/text_highl
                     next: "meta",
                 },
                 {
-                    defaultToken : "text",
-                }
-            ],
-            "meta": [
-                {
-
+                    defaultToken: "text",
                 },
+            ],
+            meta: [
+                {},
                 {
                     token: "keyword",
                     regex: "strings:",
@@ -63,18 +60,17 @@ export class YaraHighlightRules extends window.ace.acequire("ace/mode/text_highl
                     next: "conditions",
                 },
                 {
-                    defaultToken : "comment",
-                }
-
+                    defaultToken: "comment",
+                },
             ],
-            "strings": [
+            strings: [
                 {
                     token: "variable.language",
                     regex: "\\$[a-z0-9-_]+ =",
                 },
                 {
                     token: "string", // single line
-                    regex : '["](?:(?:\\\\.)|(?:[^"\\\\]))*?["]',
+                    regex: '["](?:(?:\\\\.)|(?:[^"\\\\]))*?["]',
                 },
                 {
                     token: "keyword",
@@ -101,7 +97,7 @@ export class YaraHighlightRules extends window.ace.acequire("ace/mode/text_highl
                     next: "start",
                 },
             ],
-            "conditions": [
+            conditions: [
                 {
                     token: "variable.language",
                     regex: "\\$[a-z0-9-_]+",
@@ -118,8 +114,7 @@ export class YaraHighlightRules extends window.ace.acequire("ace/mode/text_highl
     }
 }
 
-
-export default class YaraMode extends window.ace.acequire('ace/mode/text').Mode {
+export default class YaraMode extends window.ace.acequire("ace/mode/text").Mode {
     constructor() {
         super();
 

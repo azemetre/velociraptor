@@ -1,17 +1,18 @@
 .monospace {
-  font-family: var(--font-monospace);
-  font-size: 13px;
-  color: var(--color-monospace-color);
-  padding: 0;
-  margin: 0;
-  white-space: nowrap;
+    font-family: var(--font-monospace);
+    font-size: 13px;
+    color: var(--color-monospace-color);
+    padding: 0;
+    margin: 0;
+    white-space: nowrap;
 }
 
 .hexdump {
     margin: 0px;
 }
 
-td.hex_column, th.hex_column {
+td.hex_column,
+th.hex_column {
     width: fit-content;
 }
 

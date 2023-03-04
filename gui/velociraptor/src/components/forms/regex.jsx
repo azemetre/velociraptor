@@ -1,87 +1,65 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import VeloAce from '../core/ace.jsx';
-import Overlay from 'react-bootstrap/Overlay';
-import Tooltip from 'react-bootstrap/Tooltip';
+import React from "react";
+import PropTypes from "prop-types";
+import VeloAce from "../core/ace.jsx";
+import Overlay from "react-bootstrap/Overlay";
+import Tooltip from "react-bootstrap/Tooltip";
 import "./regex.css";
 
-import _ from 'lodash';
+import _ from "lodash";
 
-import T from '../i8n/i8n.jsx';
+import T from "../i8n/i8n.jsx";
 
-let gcompletions=[
-    {name: "\\s",
-     trigger: "\\",
-     description: "Match all spaces"},
-    {name: "\\w",
-     trigger: "\\",
-     description: "Match all words"},
-    {name: "\\S",
-     trigger: "\\",
-     description: "Match all non space"},
-    {name: "\\\\",
-     trigger: "\\",
-     value: "\\\\\\\\",
-     description: "Plain backslash"},
+let gcompletions = [
+    { name: "\\s", trigger: "\\", description: "Match all spaces" },
+    { name: "\\w", trigger: "\\", description: "Match all words" },
+    { name: "\\S", trigger: "\\", description: "Match all non space" },
+    { name: "\\\\", trigger: "\\", value: "\\\\\\\\", description: "Plain backslash" },
 
-    {name: "|",
-     trigger: "|",
-     description: "Alternatives"},
+    { name: "|", trigger: "|", description: "Alternatives" },
 
-    {name: "[]",
-     trigger: "[",
-     cursor_offset: 1,
-     description: "Character class (Matches any character inside the [])"},
+    {
+        name: "[]",
+        trigger: "[",
+        cursor_offset: 1,
+        description: "Character class (Matches any character inside the [])",
+    },
 
-    {name: "[^]",
-     trigger: "[",
-     cursor_offset: 2,
-     description: "Negated character class (Matches any character not in [])"},
+    {
+        name: "[^]",
+        trigger: "[",
+        cursor_offset: 2,
+        description: "Negated character class (Matches any character not in [])",
+    },
 
-    {name: "[0-9A-Z]",
-     trigger: "[",
-     description: "Letters and numbers"},
+    { name: "[0-9A-Z]", trigger: "[", description: "Letters and numbers" },
 
-    {name: "()",
-     value: "()",
-     trigger: "(",
-     cursor_offset: 1,
-     description: "Capture groups"},
+    { name: "()", value: "()", trigger: "(", cursor_offset: 1, description: "Capture groups" },
 
-    {name: "(Alternate...|Alternate...)",
-     value: "(|)",
-     trigger: "(",
-     cursor_offset: 1,
-     description: "Capture with alternates"},
+    {
+        name: "(Alternate...|Alternate...)",
+        value: "(|)",
+        trigger: "(",
+        cursor_offset: 1,
+        description: "Capture with alternates",
+    },
 
-    {name: "(?P<Name>...)",
-     value: "(?P<>)",
-     trigger: "(",
-     cursor_offset: 4,
-     description: "Named capture group"},
+    { name: "(?P<Name>...)", value: "(?P<>)", trigger: "(", cursor_offset: 4, description: "Named capture group" },
 
-    {name: "*?",
-     trigger: "*",
-     description: "zero or more matches, prefer fewer"},
+    { name: "*?", trigger: "*", description: "zero or more matches, prefer fewer" },
 
-    {name: "+?",
-     trigger: "+",
-     description: "one or more matches, prefer fewer"},
+    { name: "+?", trigger: "+", description: "one or more matches, prefer fewer" },
 
-    {name: "*",
-     trigger: "*",
-     description: "zero or more matches"},
+    { name: "*", trigger: "*", description: "zero or more matches" },
 
-    {name: "+",
-     trigger: "+",
-     description: "one or more matches"},
+    { name: "+", trigger: "+", description: "one or more matches" },
 
-    {name: "{min,max}",
-     value: "{,}",
-     cursor_offset: 1,
-     trigger: "{",
-     description: "Match between min number and max number"},
-
+    {
+        name: "{min,max}",
+        value: "{,}",
+        cursor_offset: 1,
+        trigger: "{",
+        description: "Match between min number and max number",
+    },
 ];
 
 let Completer = {
@@ -92,7 +70,7 @@ let Completer = {
     getCompletions: (editor, session, pos, prefix, callback) => {
         let completions = [];
 
-        _.each(gcompletions, x=>{
+        _.each(gcompletions, (x) => {
             if (prefix === "?" || x.trigger === prefix) {
                 let completion = {
                     caption: x.name,
@@ -111,23 +89,22 @@ let Completer = {
 
                 if (x.cursor_offset) {
                     completion.completer = {
-                        insertMatch: function(editor, data) {
+                        insertMatch: function (editor, data) {
                             let pos = editor.selection.getCursor();
                             let text = editor.getValue();
                             let rows = text.split("\n");
                             let current_row = rows[pos.row];
 
                             // Strip the trigger from the match.
-                            let new_row = current_row.substring(
-                                0, pos.column - prefix.length) +
+                            let new_row =
+                                current_row.substring(0, pos.column - prefix.length) +
                                 data.value +
                                 current_row.substring(pos.column);
                             rows[pos.row] = new_row;
 
                             editor.setValue(rows.join("\n"));
-                            editor.selection.moveTo(
-                                pos.row, pos.column + x.cursor_offset - 1);
-                        }
+                            editor.selection.moveTo(pos.row, pos.column + x.cursor_offset - 1);
+                        },
                     };
                 }
 
@@ -135,9 +112,8 @@ let Completer = {
             }
         });
         callback(null, completions);
-    }
+    },
 };
-
 
 export default class RegEx extends React.Component {
     static propTypes = {
@@ -163,46 +139,44 @@ export default class RegEx extends React.Component {
             showGutter: false,
             placeholder: T("? for suggestions"),
         });
-        this.setState({ace: ace});
+        this.setState({ ace: ace });
     };
 
-    setValue = value=>{
+    setValue = (value) => {
         let error = "";
         try {
             let sanitized_re = value.replace(/\(\?[^)]+\)/, "");
             // This raises an exception
             new RegExp(sanitized_re);
-        } catch(e) {
+        } catch (e) {
             error = e.message;
         }
         if (this.state.error !== error) {
-            this.setState({error: error});
+            this.setState({ error: error });
         }
         this.props.setValue(value);
-    }
+    };
     render() {
         return (
             <>
-              <div ref={this.myRef}
-                className="regex-form"
-              >
-                <Overlay target={this.myRef}
-                         show={!_.isEmpty(this.state.error)}
-                         placement="top">
-                {(props) => (
-                    <Tooltip className="regex-syntax-error" {...props}>
-                      {this.state.error}
-                    </Tooltip>
-                )}
-              </Overlay>
-              <VeloAce text={this.props.value}
-                       focus={false}
-                       className="regex-form"
-                       aceConfig={this.aceConfig}
-                       onChange={this.setValue}
-                       mode="regex" />
-              </div>
+                <div ref={this.myRef} className="regex-form">
+                    <Overlay target={this.myRef} show={!_.isEmpty(this.state.error)} placement="top">
+                        {(props) => (
+                            <Tooltip className="regex-syntax-error" {...props}>
+                                {this.state.error}
+                            </Tooltip>
+                        )}
+                    </Overlay>
+                    <VeloAce
+                        text={this.props.value}
+                        focus={false}
+                        className="regex-form"
+                        aceConfig={this.aceConfig}
+                        onChange={this.setValue}
+                        mode="regex"
+                    />
+                </div>
             </>
         );
     }
-};
+}

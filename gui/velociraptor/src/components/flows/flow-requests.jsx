@@ -1,11 +1,11 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import T from '../i8n/i8n.jsx';
-import VeloAce from '../core/ace.jsx';
-import CardDeck from 'react-bootstrap/CardDeck';
-import Card from 'react-bootstrap/Card';
-import axios from 'axios';
-import api from '../core/api-service.jsx';
+import React from "react";
+import PropTypes from "prop-types";
+import T from "../i8n/i8n.jsx";
+import VeloAce from "../core/ace.jsx";
+import CardDeck from "react-bootstrap/CardDeck";
+import Card from "react-bootstrap/Card";
+import axios from "axios";
+import api from "../core/api-service.jsx";
 
 export default class FlowRequests extends React.Component {
     static propTypes = {
@@ -14,12 +14,12 @@ export default class FlowRequests extends React.Component {
 
     state = {
         requests: [],
-    }
+    };
 
     componentDidMount = () => {
         this.source = axios.CancelToken.source();
         this.fetchRequests();
-    }
+    };
 
     componentWillUnmount() {
         this.source.cancel("unmounted");
@@ -32,16 +32,20 @@ export default class FlowRequests extends React.Component {
         if (flow_id !== prev_flow_id) {
             this.fetchRequests();
         }
-    }
+    };
 
     fetchRequests = () => {
-        api.get("v1/GetFlowRequests", {
-            flow_id: this.props.flow.session_id,
-            client_id: this.props.flow.client_id,
-        }, this.source.token).then((response) => {
-            this.setState({requests: response.data.items});
+        api.get(
+            "v1/GetFlowRequests",
+            {
+                flow_id: this.props.flow.session_id,
+                client_id: this.props.flow.client_id,
+            },
+            this.source.token
+        ).then((response) => {
+            this.setState({ requests: response.data.items });
         });
-    }
+    };
 
     render() {
         let serialized = JSON.stringify(this.state.requests, null, 2);
@@ -51,15 +55,13 @@ export default class FlowRequests extends React.Component {
 
         return (
             <CardDeck>
-              <Card>
-                <Card.Header>{T("Request sent to client")}</Card.Header>
-                <Card.Body>
-                  <VeloAce text={serialized}
-                           mode="json"
-                           options={options} />
-                </Card.Body>
-              </Card>
+                <Card>
+                    <Card.Header>{T("Request sent to client")}</Card.Header>
+                    <Card.Body>
+                        <VeloAce text={serialized} mode="json" options={options} />
+                    </Card.Body>
+                </Card>
             </CardDeck>
         );
     }
-};
+}

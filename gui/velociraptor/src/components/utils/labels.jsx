@@ -1,12 +1,11 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import T from '../i8n/i8n.jsx';
-import _ from 'lodash';
+import React from "react";
+import PropTypes from "prop-types";
+import T from "../i8n/i8n.jsx";
+import _ from "lodash";
 
-import api from '../core/api-service.jsx';
-import axios from 'axios';
-import CreatableSelect from 'react-select/creatable';
-
+import api from "../core/api-service.jsx";
+import axios from "axios";
+import CreatableSelect from "react-select/creatable";
 
 export default class LabelForm extends React.Component {
     static propTypes = {
@@ -17,7 +16,7 @@ export default class LabelForm extends React.Component {
     componentDidMount = () => {
         this.source = axios.CancelToken.source();
         this.loadLabels();
-    }
+    };
 
     componentWillUnmount() {
         this.source.cancel("unmounted");
@@ -27,43 +26,47 @@ export default class LabelForm extends React.Component {
         if (!this.state.initialized) {
             this.loadLabels();
         }
-    }
+    };
 
     state = {
         options: [],
         initialized: false,
-    }
+    };
 
     loadLabels = () => {
-        api.get("v1/SearchClients", {
-            query: "label:",
-            limit: 100,
-            name_only: true,
-        }, this.source.token).then((response) => {
+        api.get(
+            "v1/SearchClients",
+            {
+                query: "label:",
+                limit: 100,
+                name_only: true,
+            },
+            this.source.token
+        ).then((response) => {
             let labels = _.map(response.data.names, (x) => {
                 x = x.replace(/^label:/, "");
-                return {value: x, label: x, color: "#00B8D9", isFixed: true};
+                return { value: x, label: x, color: "#00B8D9", isFixed: true };
             });
-            this.setState({options: labels, initialized: true});
+            this.setState({ options: labels, initialized: true });
         });
     };
 
     handleChange = (newValue, actionMeta) => {
-        this.props.onChange(_.map(newValue, x=>x.value));
+        this.props.onChange(_.map(newValue, (x) => x.value));
     };
     render() {
         return (
             <>
-              <CreatableSelect
-                isMulti
-                isClearable
-                className="labels"
-                classNamePrefix="velo"
-                options={this.state.options}
-                onChange={this.handleChange}
-                placeholder={T("Select a label")}
-              />
+                <CreatableSelect
+                    isMulti
+                    isClearable
+                    className="labels"
+                    classNamePrefix="velo"
+                    options={this.state.options}
+                    onChange={this.handleChange}
+                    placeholder={T("Select a label")}
+                />
             </>
         );
     }
-};
+}

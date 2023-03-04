@@ -1,9 +1,8 @@
 .tool-link {
     border-style: none;
-    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+    font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
     white-space: nowrap;
 }
-
 
 .tool-viewer dt {
     text-align: right;

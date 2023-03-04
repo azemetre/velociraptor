@@ -1,12 +1,12 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import _ from 'lodash';
-import api from '../core/api-service.jsx';
-import Pagination from '../bootstrap/pagination/index.jsx';
-import Spinner from '../utils/spinner.jsx';
-import axios from 'axios';
+import React from "react";
+import PropTypes from "prop-types";
+import _ from "lodash";
+import api from "../core/api-service.jsx";
+import Pagination from "../bootstrap/pagination/index.jsx";
+import Spinner from "../utils/spinner.jsx";
+import axios from "axios";
 import "./file-hex-view.css";
-import T from '../i8n/i8n.jsx';
+import T from "../i8n/i8n.jsx";
 
 export default class FileHexView extends React.Component {
     static propTypes = {
@@ -21,12 +21,12 @@ export default class FileHexView extends React.Component {
         columns: 0x10,
         hexDataRows: [],
         loading: true,
-    }
+    };
 
     componentDidMount = () => {
         this.source = axios.CancelToken.source();
         this.fetchText_(0);
-    }
+    };
 
     componentWillUnmount() {
         this.source.cancel("unmounted");
@@ -37,12 +37,14 @@ export default class FileHexView extends React.Component {
         // 1. Selected node changes (file list was selected).
         // 2. VFS path changes (tree navigated away).
         // 3. node version changes (file was refreshed).
-        if (!_.isEqual(prevProps.selectedRow, this.props.selectedRow) ||
+        if (
+            !_.isEqual(prevProps.selectedRow, this.props.selectedRow) ||
             !_.isEqual(prevProps.node.path, this.props.node.path) ||
-            prevProps.node.version !== this.props.node.version) {
+            prevProps.node.version !== this.props.node.version
+        ) {
             this.fetchText_(this.state.page);
-        };
-    }
+        }
+    };
 
     fetchText_ = (page) => {
         let selectedRow = this.props.selectedRow;
@@ -62,7 +64,7 @@ export default class FileHexView extends React.Component {
         }
 
         var chunkSize = this.state.rows * this.state.columns;
-        var url = 'v1/DownloadVFSFile';
+        var url = "v1/DownloadVFSFile";
 
         // vfsFileDownloadRequest struct schema in /api/download.go
         var params = {
@@ -72,8 +74,8 @@ export default class FileHexView extends React.Component {
             client_id: client_id,
         };
 
-        this.setState({loading: true});
-        api.get_blob(url, params, this.source.token).then(buffer=> {
+        this.setState({ loading: true });
+        api.get_blob(url, params, this.source.token).then((buffer) => {
             const view = new Uint8Array(buffer);
             this.parseFileContentToHexRepresentation_(view, page);
         });
@@ -86,10 +88,10 @@ export default class FileHexView extends React.Component {
         let hexDataRows = [];
         var chunkSize = this.state.rows * this.state.columns;
 
-        for(var i = 0; i < this.state.rows; i++){
+        for (var i = 0; i < this.state.rows; i++) {
             let offset = page * chunkSize;
-            var rowOffset = offset + (i * this.state.columns);
-            var data = intArray.slice(i * this.state.columns, (i+1)*this.state.columns);
+            var rowOffset = offset + i * this.state.columns;
+            var data = intArray.slice(i * this.state.columns, (i + 1) * this.state.columns);
             var data_row = [];
             var safe_data = "";
             for (var j = 0; j < data.length; j++) {
@@ -98,9 +100,9 @@ export default class FileHexView extends React.Component {
                     safe_data += String.fromCharCode(data[j]);
                 } else {
                     safe_data += ".";
-                };
-                data_row.push(('0' + char).substr(-2)); // add leading zero if necessary
-            };
+                }
+                data_row.push(("0" + char).substr(-2)); // add leading zero if necessary
+            }
 
             hexDataRows.push({
                 offset: rowOffset,
@@ -110,9 +112,8 @@ export default class FileHexView extends React.Component {
             });
         }
 
-        this.setState({hexDataRows: hexDataRows, loading: false});
+        this.setState({ hexDataRows: hexDataRows, loading: false });
     };
-
 
     render() {
         let selectedRow = this.props.selectedRow;
@@ -134,80 +135,89 @@ export default class FileHexView extends React.Component {
             prevNext: true,
             shadow: true,
             onClick: (page, e) => {
-                this.setState({page: page - 1});
+                this.setState({ page: page - 1 });
                 this.fetchText_(page - 1);
                 e.preventDefault();
                 e.stopPropagation();
             },
         };
 
-        let hexArea = this.state.loading ? T("Loading") :
+        let hexArea = this.state.loading ? (
+            T("Loading")
+        ) : (
             <table className="hex-area">
-              <tbody>
-                { _.map(this.state.hexDataRows, function(row, idx) {
-                    return <tr key={idx}>
-                             <td>
-                               { _.map(row.data_row, function(x, idx) {
-                                   return <span key={idx}>{ x }&nbsp;</span>;
-                               })}
-                             </td>
-                           </tr>; })
-                }
-              </tbody>
-            </table>;
+                <tbody>
+                    {_.map(this.state.hexDataRows, function (row, idx) {
+                        return (
+                            <tr key={idx}>
+                                <td>
+                                    {_.map(row.data_row, function (x, idx) {
+                                        return <span key={idx}>{x}&nbsp;</span>;
+                                    })}
+                                </td>
+                            </tr>
+                        );
+                    })}
+                </tbody>
+            </table>
+        );
 
-        let contextArea = this.state.loading ? "" :
+        let contextArea = this.state.loading ? (
+            ""
+        ) : (
             <table className="content-area">
-              <tbody>
-                { _.map(this.state.hexDataRows, function(row, idx) {
-                    return <tr key={idx}><td className="data">{ row.safe_data }</td></tr>;
-                })}
-              </tbody>
-            </table>;
+                <tbody>
+                    {_.map(this.state.hexDataRows, function (row, idx) {
+                        return (
+                            <tr key={idx}>
+                                <td className="data">{row.safe_data}</td>
+                            </tr>
+                        );
+                    })}
+                </tbody>
+            </table>
+        );
 
         return (
             <div>
-              <Spinner loading={this.state.loading}/>
-              <div className="file-hex-view">
-                { pageCount && <Pagination {...paginationConfig}/> }
+                <Spinner loading={this.state.loading} />
+                <div className="file-hex-view">
+                    {pageCount && <Pagination {...paginationConfig} />}
 
-                <div className="panel hexdump">
-                  <div className="monospace">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th className="hex_column offset">{T("Offset")}</th>
-                          <th className="hex_column">00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f </th>
-                          <th></th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td className="hex_column offset">
-                            <table className="offset-area">
-                              <tbody>
-                                { _.map(this.state.hexDataRows, function(row, idx) {
-                                    return <tr key={idx}>
-                                             <td className="offset">
-                                               0x{ row.offset.toString(16) }
-                                             </td>
-                                           </tr>; })}
-                              </tbody>
+                    <div className="panel hexdump">
+                        <div className="monospace">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th className="hex_column offset">{T("Offset")}</th>
+                                        <th className="hex_column">00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f </th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td className="hex_column offset">
+                                            <table className="offset-area">
+                                                <tbody>
+                                                    {_.map(this.state.hexDataRows, function (row, idx) {
+                                                        return (
+                                                            <tr key={idx}>
+                                                                <td className="offset">0x{row.offset.toString(16)}</td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                        <td className="hex_column">{hexArea}</td>
+                                        <td className="hex_column">{contextArea}</td>
+                                    </tr>
+                                </tbody>
                             </table>
-                          </td>
-                          <td className="hex_column">
-                            { hexArea }
-                          </td>
-                          <td className="hex_column">
-                            { contextArea }
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
+                        </div>
+                    </div>
                 </div>
-              </div>
             </div>
         );
     }
-};
+}

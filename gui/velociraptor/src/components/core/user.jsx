@@ -1,7 +1,7 @@
-import _ from 'lodash';
-import React from 'react';
-import api from '../core/api-service.jsx';
-import axios from 'axios';
+import _ from "lodash";
+import React from "react";
+import api from "../core/api-service.jsx";
+import axios from "axios";
 
 const UserConfig = React.createContext({
     traits: {},
@@ -34,31 +34,31 @@ export class UserSettings extends React.Component {
             traits.username = response.data.username;
             traits.orgs = response.data.orgs;
 
-            this.setState({traits: traits});
+            this.setState({ traits: traits });
 
-            document.body.classList.remove('no-theme');
-            document.body.classList.remove('veloci-dark');
-            document.body.classList.remove('veloci-light');
-            document.body.classList.remove('pink-light');
-            document.body.classList.remove('github-dimmed-dark');
-            document.body.classList.remove('github-dimmed-light');
-            document.body.classList.remove('ncurses');
-            document.body.classList.remove('coolgray-dark');
-            document.body.classList.remove('midnight');
+            document.body.classList.remove("no-theme");
+            document.body.classList.remove("veloci-dark");
+            document.body.classList.remove("veloci-light");
+            document.body.classList.remove("pink-light");
+            document.body.classList.remove("github-dimmed-dark");
+            document.body.classList.remove("github-dimmed-light");
+            document.body.classList.remove("ncurses");
+            document.body.classList.remove("coolgray-dark");
+            document.body.classList.remove("midnight");
             document.body.classList.add(traits.theme || "veloci-light");
         });
-    }
+    };
 
     state = {
         traits: {},
         updateTraits: this.updateTraits,
-    }
+    };
 
     componentDidMount = () => {
         this.source = axios.CancelToken.source();
         this.interval = setInterval(this.updateTraits, POLL_TIME);
         this.updateTraits();
-    }
+    };
 
     componentWillUnmount() {
         this.source.cancel("unmounted");
@@ -67,15 +67,11 @@ export class UserSettings extends React.Component {
 
     getUserOptions = (traits) => {
         return JSON.parse(traits.ui_settings || "{}");
-    }
+    };
 
     render() {
-        return (
-            <UserConfig.Provider value={this.state}>
-              { this.props.children }
-            </UserConfig.Provider>
-        );
+        return <UserConfig.Provider value={this.state}>{this.props.children}</UserConfig.Provider>;
     }
-};
+}
 
 export default UserConfig;

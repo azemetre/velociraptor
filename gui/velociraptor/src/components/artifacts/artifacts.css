@@ -1,4 +1,4 @@
-.artifact-search-table  {
+.artifact-search-table {
     padding-right: 0;
     padding-left: 0;
     margin-right: 15px;
@@ -47,7 +47,7 @@
 
 pre {
     white-space: pre-wrap;
-    min-height: 1.5em
+    min-height: 1.5em;
 }
 
 .arg-help {

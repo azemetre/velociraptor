@@ -1,14 +1,14 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from "react";
+import PropTypes from "prop-types";
 
-import _ from 'lodash';
-import api from '../core/api-service.jsx';
-import Pagination from '../bootstrap/pagination/index.jsx';
-import Spinner from '../utils/spinner.jsx';
-import VeloAce from '../core/ace.jsx';
-import axios from 'axios';
+import _ from "lodash";
+import api from "../core/api-service.jsx";
+import Pagination from "../bootstrap/pagination/index.jsx";
+import Spinner from "../utils/spinner.jsx";
+import VeloAce from "../core/ace.jsx";
+import axios from "axios";
 import "./file-hex-view.css";
-import T from '../i8n/i8n.jsx';
+import T from "../i8n/i8n.jsx";
 
 const pagesize = 100 * 1024;
 
@@ -23,12 +23,12 @@ export default class FileTextView extends React.Component {
         page: 0,
         rawdata: "",
         loading: false,
-    }
+    };
 
     componentDidMount = () => {
         this.source = axios.CancelToken.source();
         this.fetchText_(0);
-    }
+    };
 
     componentWillUnmount() {
         this.source.cancel("unmounted");
@@ -40,13 +40,15 @@ export default class FileTextView extends React.Component {
         // 2. VFS path changes (tree navigated away).
         // 3. node version changes (file was refreshed).
         // 4. page is changed
-        if (!_.isEqual(prevProps.selectedRow, this.props.selectedRow) ||
+        if (
+            !_.isEqual(prevProps.selectedRow, this.props.selectedRow) ||
             !_.isEqual(prevProps.node.path, this.props.node.path) ||
             prevProps.node.version !== this.props.node.version ||
-            prevState.page !== this.state.page) {
+            prevState.page !== this.state.page
+        ) {
             this.fetchText_(this.state.page);
-        };
-    }
+        }
+    };
 
     fetchText_ = (page) => {
         let selectedRow = this.props.selectedRow;
@@ -65,7 +67,7 @@ export default class FileTextView extends React.Component {
             return;
         }
 
-        var url = 'v1/DownloadVFSFile';
+        var url = "v1/DownloadVFSFile";
         var params = {
             offset: page * pagesize,
             length: pagesize,
@@ -73,20 +75,23 @@ export default class FileTextView extends React.Component {
             client_id: client_id,
         };
 
-        this.setState({loading: true});
-        api.get_blob(url, params, this.source.token).then(buffer=>{
-            const view = new Uint8Array(buffer);
-            this.parseFileContentToTextRepresentation_(view, page);
-        }, ()=>{
-            this.setState({hexDataRows: [], loading: false, page: page});
-        });
+        this.setState({ loading: true });
+        api.get_blob(url, params, this.source.token).then(
+            (buffer) => {
+                const view = new Uint8Array(buffer);
+                this.parseFileContentToTextRepresentation_(view, page);
+            },
+            () => {
+                this.setState({ hexDataRows: [], loading: false, page: page });
+            }
+        );
     };
 
     parseFileContentToTextRepresentation_ = (intArray, page) => {
         let rawdata = "";
         let line_length = 0;
         for (var i = 0; i < intArray.length; i++) {
-            if(intArray[i] > 0x20 && intArray[i]<0x7f) {
+            if (intArray[i] > 0x20 && intArray[i] < 0x7f) {
                 rawdata += String.fromCharCode(intArray[i]);
             } else {
                 rawdata += ".";
@@ -100,10 +105,9 @@ export default class FileTextView extends React.Component {
                 rawdata += "\n";
                 line_length = 0;
             }
-        };
-        this.setState({rawdata: rawdata, loading: false, page: page});
+        }
+        this.setState({ rawdata: rawdata, loading: false, page: page });
     };
-
 
     render() {
         let selectedRow = this.props.selectedRow;
@@ -123,7 +127,7 @@ export default class FileTextView extends React.Component {
             prevNext: true,
             shadow: true,
             onClick: (page, e) => {
-                this.setState({page: page - 1});
+                this.setState({ page: page - 1 });
                 e.preventDefault();
                 e.stopPropagation();
             },
@@ -131,16 +135,12 @@ export default class FileTextView extends React.Component {
 
         return (
             <div>
-              <Spinner loading={this.state.loading}/>
-              <div className="file-hex-view">
-                <Pagination {...paginationConfig} />
-                <VeloAce
-                  text={this.state.rawdata}
-                  mode="text"
-                  options={{readOnly: true}}
-                />
-              </div>
+                <Spinner loading={this.state.loading} />
+                <div className="file-hex-view">
+                    <Pagination {...paginationConfig} />
+                    <VeloAce text={this.state.rawdata} mode="text" options={{ readOnly: true }} />
+                </div>
             </div>
         );
     }
-};
+}

@@ -1,7 +1,7 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from "react";
+import PropTypes from "prop-types";
 
-import VeloPagedTable from '../core/paged-table.jsx';
+import VeloPagedTable from "../core/paged-table.jsx";
 
 export default class NotebookTableRenderer extends React.Component {
     static propTypes = {
@@ -11,11 +11,13 @@ export default class NotebookTableRenderer extends React.Component {
     };
 
     render() {
-        return <VeloPagedTable
-                 env={this.props.env}
-                 className="col-12"
-                 refresh={this.props.refresh}
-                 params={this.props.params}
-               />;
+        return (
+            <VeloPagedTable
+                env={this.props.env}
+                className="col-12"
+                refresh={this.props.refresh}
+                params={this.props.params}
+            />
+        );
     }
 }

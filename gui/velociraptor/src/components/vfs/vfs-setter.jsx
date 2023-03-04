@@ -1,16 +1,16 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import _ from 'lodash';
-import { withRouter }  from "react-router-dom";
+import React, { Component } from "react";
+import PropTypes from "prop-types";
+import _ from "lodash";
+import { withRouter } from "react-router-dom";
 
-import { SplitPathComponents, DecodePathInURL } from '../utils/paths.jsx';
+import { SplitPathComponents, DecodePathInURL } from "../utils/paths.jsx";
 
 // A component that syncs a client id to a client record.
 class VFSSetterFromRoute extends Component {
     static propTypes = {
         vfs_path: PropTypes.array,
         updateVFSPath: PropTypes.func.isRequired,
-    }
+    };
 
     componentDidUpdate() {
         this.maybeUpdateVFSPath();

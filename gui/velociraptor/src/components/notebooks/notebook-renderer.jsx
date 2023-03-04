@@ -1,13 +1,13 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from "react";
+import PropTypes from "prop-types";
 
-import NotebookCellRenderer from './notebook-cell-renderer.jsx';
-import Spinner from '../utils/spinner.jsx';
-import _ from 'lodash';
-import T from '../i8n/i8n.jsx';
+import NotebookCellRenderer from "./notebook-cell-renderer.jsx";
+import Spinner from "../utils/spinner.jsx";
+import _ from "lodash";
+import T from "../i8n/i8n.jsx";
 
-import api from '../core/api-service.jsx';
-import axios from 'axios';
+import api from "../core/api-service.jsx";
+import axios from "axios";
 
 export default class NotebookRenderer extends React.Component {
     static propTypes = {
@@ -19,16 +19,15 @@ export default class NotebookRenderer extends React.Component {
     state = {
         selected_cell_id: "",
         loading: false,
-    }
+    };
 
     setSelectedCellId = (cell_id) => {
-        this.setState({selected_cell_id: cell_id});
-    }
-
+        this.setState({ selected_cell_id: cell_id });
+    };
 
     componentDidMount = () => {
         this.source = axios.CancelToken.source();
-    }
+    };
 
     componentWillUnmount() {
         this.source.cancel();
@@ -39,7 +38,7 @@ export default class NotebookRenderer extends React.Component {
         let changed = false;
 
         let new_cells = [];
-        for (var i=0; i<cell_metadata.length; i++) {
+        for (var i = 0; i < cell_metadata.length; i++) {
             if (cell_metadata[i].cell_id === cell_id && new_cells.length > 0) {
                 let last_cell = new_cells.pop();
                 new_cells.push(cell_metadata[i]);
@@ -52,15 +51,17 @@ export default class NotebookRenderer extends React.Component {
 
         if (changed) {
             this.props.notebook.cell_metadata = new_cells;
-            this.setState({loading: true});
-            api.post('v1/UpdateNotebook',
-                     this.props.notebook, this.source.token).then(response=>{
-                         if (response.cancel) return;
-                         this.props.fetchNotebooks();
-                         this.setState({loading: false});
-                     }, (response) => {
-                         console.log("Error " + response.data);
-                     });
+            this.setState({ loading: true });
+            api.post("v1/UpdateNotebook", this.props.notebook, this.source.token).then(
+                (response) => {
+                    if (response.cancel) return;
+                    this.props.fetchNotebooks();
+                    this.setState({ loading: false });
+                },
+                (response) => {
+                    console.log("Error " + response.data);
+                }
+            );
         }
     };
 
@@ -74,7 +75,7 @@ export default class NotebookRenderer extends React.Component {
         }
 
         var new_cells = [];
-        for (var i=0; i<cell_metadata.length; i++) {
+        for (var i = 0; i < cell_metadata.length; i++) {
             if (cell_metadata[i].cell_id === cell_id) {
                 changed = true;
             } else {
@@ -84,17 +85,18 @@ export default class NotebookRenderer extends React.Component {
 
         if (changed) {
             this.props.notebook.cell_metadata = new_cells;
-            this.setState({loading: true});
-            api.post('v1/UpdateNotebook',
-                     this.props.notebook,
-                     this.source.token).then(response=>{
-                         if (response.cancel) return;
+            this.setState({ loading: true });
+            api.post("v1/UpdateNotebook", this.props.notebook, this.source.token).then(
+                (response) => {
+                    if (response.cancel) return;
 
-                         this.props.fetchNotebooks();
-                         this.setState({loading: false});
-                     }, function failure(response) {
-                         console.log("Error " + response.data);
-                     });
+                    this.props.fetchNotebooks();
+                    this.setState({ loading: false });
+                },
+                function failure(response) {
+                    console.log("Error " + response.data);
+                }
+            );
         }
     };
 
@@ -103,9 +105,9 @@ export default class NotebookRenderer extends React.Component {
         var cell_metadata = this.props.notebook.cell_metadata;
 
         var new_cells = [];
-        for (var i=0; i<cell_metadata.length; i++) {
+        for (var i = 0; i < cell_metadata.length; i++) {
             if (cell_metadata[i].cell_id === cell_id && cell_metadata.length > i) {
-                var next_cell = cell_metadata[i+1];
+                var next_cell = cell_metadata[i + 1];
                 if (!_.isEmpty(next_cell)) {
                     new_cells.push(next_cell);
                     new_cells.push(cell_metadata[i]);
@@ -119,72 +121,72 @@ export default class NotebookRenderer extends React.Component {
 
         if (changed) {
             this.props.notebook.cell_metadata = new_cells;
-            this.setState({loading: true});
-            api.post('v1/UpdateNotebook',
-                     this.props.notebook,
-                     this.source.token).then(response=>{
-                         if (response.cancel) return;
-                         this.props.fetchNotebooks();
-                         this.setState({loading: false});
-                     }, function failure(response) {
-                         console.log("Error " + response.data);
-                     });
+            this.setState({ loading: true });
+            api.post("v1/UpdateNotebook", this.props.notebook, this.source.token).then(
+                (response) => {
+                    if (response.cancel) return;
+                    this.props.fetchNotebooks();
+                    this.setState({ loading: false });
+                },
+                function failure(response) {
+                    console.log("Error " + response.data);
+                }
+            );
         }
     };
 
     addCell = (cell_id, cell_type, content, env) => {
         let request = {};
-        switch(cell_type.toLowerCase()) {
-        case "vql":
-        case "markdown":
-        case "artifact":
-            request = {
-                notebook_id: this.props.notebook.notebook_id,
-                type: cell_type,
-                cell_id: cell_id,
-                env: env,
-                input: content,
-            }; break;
-        default:
-            return;
+        switch (cell_type.toLowerCase()) {
+            case "vql":
+            case "markdown":
+            case "artifact":
+                request = {
+                    notebook_id: this.props.notebook.notebook_id,
+                    type: cell_type,
+                    cell_id: cell_id,
+                    env: env,
+                    input: content,
+                };
+                break;
+            default:
+                return;
         }
 
-        this.setState({loading: true});
-        api.post('v1/NewNotebookCell',
-                 request,
-                 this.source.token).then((response) => {
-                     if (response.cancel) return;
-                     this.props.fetchNotebooks();
-                     this.setState({selected_cell_id: response.data.latest_cell_id,
-                                    loading: false});
-                 });
-    }
+        this.setState({ loading: true });
+        api.post("v1/NewNotebookCell", request, this.source.token).then((response) => {
+            if (response.cancel) return;
+            this.props.fetchNotebooks();
+            this.setState({ selected_cell_id: response.data.latest_cell_id, loading: false });
+        });
+    };
 
     render() {
         if (!this.props.notebook || _.isEmpty(this.props.notebook.cell_metadata)) {
-            return <h5 className="no-content">
-                     {T("Select a notebook from the list above.")}
-                   </h5>;
+            return <h5 className="no-content">{T("Select a notebook from the list above.")}</h5>;
         }
 
         return (
             <>
-              <Spinner loading={this.state.loading || this.props.notebook.loading} />
-              { _.map(this.props.notebook.cell_metadata, (cell_md, idx) => {
-                  return <NotebookCellRenderer
-                           env={this.props.env}
-                           selected_cell_id={this.state.selected_cell_id}
-                           setSelectedCellId={this.setSelectedCellId}
-                           notebook_id={this.props.notebook.notebook_id}
-                           notebook_metadata={this.props.notebook}
-                           cell_metadata={cell_md} key={idx}
-                           upCell={this.upCell}
-                           downCell={this.downCell}
-                           deleteCell={this.deleteCell}
-                           addCell={this.addCell}
-                      />;
-              })}
+                <Spinner loading={this.state.loading || this.props.notebook.loading} />
+                {_.map(this.props.notebook.cell_metadata, (cell_md, idx) => {
+                    return (
+                        <NotebookCellRenderer
+                            env={this.props.env}
+                            selected_cell_id={this.state.selected_cell_id}
+                            setSelectedCellId={this.setSelectedCellId}
+                            notebook_id={this.props.notebook.notebook_id}
+                            notebook_metadata={this.props.notebook}
+                            cell_metadata={cell_md}
+                            key={idx}
+                            upCell={this.upCell}
+                            downCell={this.downCell}
+                            deleteCell={this.deleteCell}
+                            addCell={this.addCell}
+                        />
+                    );
+                })}
             </>
         );
     }
-};
+}

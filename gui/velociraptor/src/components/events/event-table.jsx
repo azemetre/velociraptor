@@ -1,35 +1,33 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import _ from 'lodash';
-import T from '../i8n/i8n.jsx';
+import React from "react";
+import PropTypes from "prop-types";
+import _ from "lodash";
+import T from "../i8n/i8n.jsx";
 
-import api from '../core/api-service.jsx';
-import Modal from 'react-bootstrap/Modal';
-import StepWizard from 'react-step-wizard';
-import Form from 'react-bootstrap/Form';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
-import Card from 'react-bootstrap/Card';
-import Table  from 'react-bootstrap/Table';
-import utils from './utils.jsx';
+import api from "../core/api-service.jsx";
+import Modal from "react-bootstrap/Modal";
+import StepWizard from "react-step-wizard";
+import Form from "react-bootstrap/Form";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
+import Card from "react-bootstrap/Card";
+import Table from "react-bootstrap/Table";
+import utils from "./utils.jsx";
 import { HotKeys, ObserveKeys } from "react-hotkeys";
-import { Typeahead, Token } from 'react-bootstrap-typeahead';
-import axios from 'axios';
+import { Typeahead, Token } from "react-bootstrap-typeahead";
+import axios from "axios";
 
 import "react-bootstrap-typeahead/css/Typeahead.css";
 
-import NewCollectionConfigParameters from '../flows/new-collections-parameters.jsx';
+import NewCollectionConfigParameters from "../flows/new-collections-parameters.jsx";
 import {
     NewCollectionSelectArtifacts,
     NewCollectionRequest,
     NewCollectionLaunch,
-    PaginationBuilder
-} from '../flows/new-collection.jsx';
+    PaginationBuilder,
+} from "../flows/new-collection.jsx";
 
 class EventTablePaginator extends PaginationBuilder {
-    PaginationSteps = ["Configure Label Group",
-                       "Select Artifacts", "Configure Parameters",
-                       "Review", "Launch"];
+    PaginationSteps = ["Configure Label Group", "Select Artifacts", "Configure Parameters", "Review", "Launch"];
 }
 
 class EventTableLabelGroup extends React.Component {
@@ -38,34 +36,38 @@ class EventTableLabelGroup extends React.Component {
         setLabel: PropTypes.func.isRequired,
         tables: PropTypes.object,
         paginator: PropTypes.object,
-    }
+    };
 
     state = {
         // A list of all labels on the system to let the user pick
         // one.
         labels: [],
-    }
+    };
 
     componentDidMount = () => {
         this.source = axios.CancelToken.source();
         this.loadLabels();
-    }
+    };
 
     componentWillUnmount() {
         this.source.cancel("unmounted");
     }
 
     loadLabels = () => {
-        api.get("v1/SearchClients", {
-            query: "label:*",
-            limit: 1000,
-            name_only: true,
-        }, this.source.token).then((response) => {
+        api.get(
+            "v1/SearchClients",
+            {
+                query: "label:*",
+                limit: 1000,
+                name_only: true,
+            },
+            this.source.token
+        ).then((response) => {
             let labels = _.map(response.data.names, (x) => {
                 x = x.replace(/^label:/, "");
                 return x;
             });
-            this.setState({labels: ["All"].concat(labels), initialized: true});
+            this.setState({ labels: ["All"].concat(labels), initialized: true });
         });
     };
 
@@ -83,7 +85,7 @@ class EventTableLabelGroup extends React.Component {
             length = length || 0;
 
             if (!seen[label]) {
-                existing_labels.push( {
+                existing_labels.push({
                     label: label,
                     name: label + " (" + (length || 0) + " artifacts)",
                 });
@@ -92,7 +94,7 @@ class EventTableLabelGroup extends React.Component {
         };
 
         let tables = this.props.tables;
-        if(!_.isEmpty(tables)) {
+        if (!_.isEmpty(tables)) {
             make_label("All", this.props.tables.All);
             _.each(this.props.tables, (v, k) => {
                 make_label(k, v);
@@ -100,8 +102,8 @@ class EventTableLabelGroup extends React.Component {
         }
 
         // Now add all the other labels we know about
-        _.each(this.state.labels, x=>{
-            if(!seen[x]) {
+        _.each(this.state.labels, (x) => {
+            if (!seen[x]) {
                 existing_labels.push({
                     label: x,
                     name: x + " (0 artifacts)",
@@ -110,89 +112,90 @@ class EventTableLabelGroup extends React.Component {
             }
         });
         return existing_labels;
-    }
+    };
 
     render() {
         let current_label = this.props.label;
-        let current_artifacts = this.props.tables &&
+        let current_artifacts =
+            this.props.tables &&
             this.props.tables[current_label.label] &&
             this.props.tables[current_label.label].artifacts;
         let existing_labels = this.createSuggestionList();
         return (
             <>
-              <Modal.Header closeButton>
-                <Modal.Title>
-                  {T("Event Monitoring: Configure Label groups")}
-                </Modal.Title>
-              </Modal.Header>
-              <Modal.Body>
-                <h1>{T("Configuring Label")} {current_label.label}</h1>
-                <Form>
-                  <Form.Group as={Row}>
-                    <Form.Label column sm="3">Label group</Form.Label>
-                    <Col sm="8">
-                      <Typeahead
-                        id="label-selector"
-                        autoFocus={true}
-                        clearButton={true}
-                        placeholder={T("Select label to edit its event monitoring table")}
-                        renderToken={(option, { onRemove }, index) => (
-                                <Token
-                                  key={index}
-                                  onRemove={onRemove}
-                                  option={option}>
-                                  {`${option.name}`}
-                                </Token>)}
-                        labelKey="name"
-                        onChange={x=>{
-                            if (!_.isEmpty(x)) {
-                                this.props.setLabel(x[0]);
-                            }
-                        }}
-                        options={existing_labels}
-                      >
-                      </Typeahead>
-                    </Col>
-                  </Form.Group>
-                </Form>
-                <Card>
-                  <Card.Header>{T("Event Monitoring Label Groups")}</Card.Header>
-                  <Card.Body>
-                    <Card.Text>
-                      {T("EventMonitoringCard")}
-                    </Card.Text>
-                    { !_.isEmpty(current_artifacts) &&
-                      <><h2>{T("Label")} { current_label.label}</h2>
-                        <Table>
-                          <thead><tr>
-                                   <th>
-                                     {T("Artifact Collected")}
-                                   </th>
-                                 </tr>
-                          </thead>
-                          <tbody>
-                            {_.map(current_artifacts,
-                                   (x, idx)=><tr key={idx}>
-                                               <td>{x.name}</td>
-                                             </tr>)}
-                          </tbody>
-                        </Table>
-                      </>}
-                  </Card.Body>
-                </Card>
-              </Modal.Body>
-              <Modal.Footer>
-                { this.props.paginator.makePaginator({
-                    props: this.props,
-                    step_name: "Offline Collector",
-                    isFocused: _.isEmpty(this.props.label),
-                }) }
-              </Modal.Footer>
+                <Modal.Header closeButton>
+                    <Modal.Title>{T("Event Monitoring: Configure Label groups")}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <h1>
+                        {T("Configuring Label")} {current_label.label}
+                    </h1>
+                    <Form>
+                        <Form.Group as={Row}>
+                            <Form.Label column sm="3">
+                                Label group
+                            </Form.Label>
+                            <Col sm="8">
+                                <Typeahead
+                                    id="label-selector"
+                                    autoFocus={true}
+                                    clearButton={true}
+                                    placeholder={T("Select label to edit its event monitoring table")}
+                                    renderToken={(option, { onRemove }, index) => (
+                                        <Token key={index} onRemove={onRemove} option={option}>
+                                            {`${option.name}`}
+                                        </Token>
+                                    )}
+                                    labelKey="name"
+                                    onChange={(x) => {
+                                        if (!_.isEmpty(x)) {
+                                            this.props.setLabel(x[0]);
+                                        }
+                                    }}
+                                    options={existing_labels}
+                                ></Typeahead>
+                            </Col>
+                        </Form.Group>
+                    </Form>
+                    <Card>
+                        <Card.Header>{T("Event Monitoring Label Groups")}</Card.Header>
+                        <Card.Body>
+                            <Card.Text>{T("EventMonitoringCard")}</Card.Text>
+                            {!_.isEmpty(current_artifacts) && (
+                                <>
+                                    <h2>
+                                        {T("Label")} {current_label.label}
+                                    </h2>
+                                    <Table>
+                                        <thead>
+                                            <tr>
+                                                <th>{T("Artifact Collected")}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {_.map(current_artifacts, (x, idx) => (
+                                                <tr key={idx}>
+                                                    <td>{x.name}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </Table>
+                                </>
+                            )}
+                        </Card.Body>
+                    </Card>
+                </Modal.Body>
+                <Modal.Footer>
+                    {this.props.paginator.makePaginator({
+                        props: this.props,
+                        step_name: "Offline Collector",
+                        isFocused: _.isEmpty(this.props.label),
+                    })}
+                </Modal.Footer>
             </>
         );
     }
 }
-
 
 // Used to manipulate the event tables.
 export class EventTableWizard extends React.Component {
@@ -207,17 +210,17 @@ export class EventTableWizard extends React.Component {
         tables: {},
 
         // A selector for the current label we are working with.
-        current_label: {},  // {label: "", name: ""}
+        current_label: {}, // {label: "", name: ""}
 
         // The event table for this label. Each time the label is
         // changed we update this one.
-        current_table: {artifacts:[], specs:{}},
-    }
+        current_table: { artifacts: [], specs: {} },
+    };
 
     componentDidMount = () => {
         this.source = axios.CancelToken.source();
         this.fetchEventTable();
-    }
+    };
 
     componentWillUnmount() {
         this.source.cancel("unmounted");
@@ -225,10 +228,10 @@ export class EventTableWizard extends React.Component {
 
     componentDidUpdate = (prevProps, prevState, rootNode) => {
         return false;
-    }
+    };
 
     fetchEventTable = () => {
-        api.get("v1/GetClientMonitoringState", {}, this.source.token).then(resp => {
+        api.get("v1/GetClientMonitoringState", {}, this.source.token).then((resp) => {
             // For historical reasons the client monitoring state
             // protobuf is more complex than it needs to be. We
             // convert it to more sensible internal representation. It
@@ -238,11 +241,11 @@ export class EventTableWizard extends React.Component {
             // Convert from flows_proto.ClientEventTable to an
             // internal representation (client_event_table) - see
             // utils.js for description of this internal format.
-            utils.proto2tables(resp.data, table=>{
-                this.setState({tables: table});
+            utils.proto2tables(resp.data, (table) => {
+                this.setState({ tables: table });
             });
         });
-    }
+    };
 
     // Update the artifacts in the current table ... immutable gymnastics.
     setArtifacts = (artifacts) => {
@@ -253,8 +256,8 @@ export class EventTableWizard extends React.Component {
             specs: current_table.specs || {},
         };
         tables[this.state.current_label.label] = new_table;
-        this.setState({current_table: new_table, tables: tables});
-    }
+        this.setState({ current_table: new_table, tables: tables });
+    };
 
     setParameters = (params) => {
         let current_table = this.state.current_table;
@@ -264,8 +267,8 @@ export class EventTableWizard extends React.Component {
             specs: params,
         };
         tables[this.state.current_label.label] = new_table;
-        this.setState({current_table: new_table, tables: tables});
-    }
+        this.setState({ current_table: new_table, tables: tables });
+    };
 
     // Select a table depending on the selected label. If a table does
     // not exist - create it.
@@ -276,46 +279,44 @@ export class EventTableWizard extends React.Component {
         // If no table currently exists for this label, make a new
         // one.
         if (!current_table) {
-            current_table = {artifacts: [], specs: {}};
+            current_table = { artifacts: [], specs: {} };
             tables[label.label] = current_table;
         }
 
         // Update the wizard parameters from the event table.
-        this.setState({current_label: label,
-                       current_table: current_table,
-                       tables: tables});
-    }
+        this.setState({ current_label: label, current_table: current_table, tables: tables });
+    };
 
     // Let our caller know the artifact request we created.
     launch = () => {
         this.props.onResolve(this.prepareRequest());
-    }
+    };
 
     // Build a new event table protobuf from our internal state.
     prepareRequest = () => {
         return utils.table2protobuf(this.state.tables);
-    }
+    };
 
     gotoStep = (step) => {
-        return e=>{
+        return (e) => {
             this.step.goToStep(step);
             e.preventDefault();
         };
     };
 
     gotoNextStep = () => {
-        return e=>{
+        return (e) => {
             this.step.nextStep();
             e.preventDefault();
         };
-    }
+    };
 
     gotoPrevStep = () => {
-        return e=>{
+        return (e) => {
             this.step.previousStep();
             e.preventDefault();
         };
-    }
+    };
 
     render() {
         let label = this.state.current_label.label;
@@ -324,73 +325,84 @@ export class EventTableWizard extends React.Component {
             NEXT_STEP: "ctrl+right",
             PREV_STEP: "ctrl+left",
         };
-        let handlers={
+        let handlers = {
             GOTO_LAUNCH: this.gotoStep(5),
             NEXT_STEP: this.gotoNextStep(),
             PREV_STEP: this.gotoPrevStep(),
         };
 
         return (
-            <Modal show={true}
-                   className="full-height"
-                   dialogClassName="modal-90w"
-                   enforceFocus={false}
-                   scrollable={true}
-                   onHide={this.props.onCancel}>
-              <HotKeys keyMap={keymap} handlers={handlers}><ObserveKeys>
-              <StepWizard ref={n=>this.step=n}>
-                <EventTableLabelGroup
-                  label={this.state.current_label}
-                  setLabel={this.setLabel}
-                  tables={this.state.tables}
-                  paginator={new EventTablePaginator(
-                      "Configure Label Group",
-                      "Event Monitoring: Configure client labels")}
-                />
+            <Modal
+                show={true}
+                className="full-height"
+                dialogClassName="modal-90w"
+                enforceFocus={false}
+                scrollable={true}
+                onHide={this.props.onCancel}
+            >
+                <HotKeys keyMap={keymap} handlers={handlers}>
+                    <ObserveKeys>
+                        <StepWizard ref={(n) => (this.step = n)}>
+                            <EventTableLabelGroup
+                                label={this.state.current_label}
+                                setLabel={this.setLabel}
+                                tables={this.state.tables}
+                                paginator={
+                                    new EventTablePaginator(
+                                        "Configure Label Group",
+                                        "Event Monitoring: Configure client labels"
+                                    )
+                                }
+                            />
 
-                <NewCollectionSelectArtifacts
-                  paginator={new EventTablePaginator(
-                      "Select Artifacts",
-                      T("Event Monitoring: Select artifacts to collect from label group ") + label,
-                      ()=>false)}
-                  artifacts={this.state.current_table.artifacts}
-                  artifactType="CLIENT_EVENT"
-                  setArtifacts={this.setArtifacts}/>
+                            <NewCollectionSelectArtifacts
+                                paginator={
+                                    new EventTablePaginator(
+                                        "Select Artifacts",
+                                        T("Event Monitoring: Select artifacts to collect from label group ") + label,
+                                        () => false
+                                    )
+                                }
+                                artifacts={this.state.current_table.artifacts}
+                                artifactType="CLIENT_EVENT"
+                                setArtifacts={this.setArtifacts}
+                            />
 
-                <NewCollectionConfigParameters
-                  parameters={this.state.current_table.specs}
-                  setParameters={this.setParameters}
-                  artifacts={this.state.current_table.artifacts}
-                  setArtifacts={this.setArtifacts}
-                  paginator={new EventTablePaginator(
-                      "Configure Parameters",
-                      T("Event Monitoring: Configure artifact parameters for label group ") + label)}
-                />
+                            <NewCollectionConfigParameters
+                                parameters={this.state.current_table.specs}
+                                setParameters={this.setParameters}
+                                artifacts={this.state.current_table.artifacts}
+                                setArtifacts={this.setArtifacts}
+                                paginator={
+                                    new EventTablePaginator(
+                                        "Configure Parameters",
+                                        T("Event Monitoring: Configure artifact parameters for label group ") + label
+                                    )
+                                }
+                            />
 
-                <NewCollectionRequest
-                  paginator={new EventTablePaginator(
-                      "Review",
-                      T("Event Monitoring: Review new event tables"))}
-                  request={this.prepareRequest()} />
+                            <NewCollectionRequest
+                                paginator={
+                                    new EventTablePaginator("Review", T("Event Monitoring: Review new event tables"))
+                                }
+                                request={this.prepareRequest()}
+                            />
 
-                <NewCollectionLaunch
-                  artifacts={this.state.current_table.artifacts}
-                  paginator={new PaginationBuilder(
-                      "Launch",
-                      T("New Collection: Launch collection"))}
-                  launch={this.launch} />
-
-              </StepWizard>
-              </ObserveKeys></HotKeys>
+                            <NewCollectionLaunch
+                                artifacts={this.state.current_table.artifacts}
+                                paginator={new PaginationBuilder("Launch", T("New Collection: Launch collection"))}
+                                launch={this.launch}
+                            />
+                        </StepWizard>
+                    </ObserveKeys>
+                </HotKeys>
             </Modal>
         );
     }
-};
-
+}
 
 class ServerEventTablePaginator extends PaginationBuilder {
-    PaginationSteps = ["Select Artifacts", "Configure Parameters",
-                       "Review", "Launch"];
+    PaginationSteps = ["Select Artifacts", "Configure Parameters", "Review", "Launch"];
 }
 
 // Used to manipulate the event tables for the server. The server does
@@ -406,17 +418,17 @@ export class ServerEventTableWizard extends React.Component {
         tables: {},
 
         // A selector for the current label we are working with.
-        current_label: {},  // {label: "", name: ""}
+        current_label: {}, // {label: "", name: ""}
 
         // The event table for this label. Each time the label is
         // changed we update this one.
-        current_table: {artifacts:[], specs:{}},
-    }
+        current_table: { artifacts: [], specs: {} },
+    };
 
     componentDidMount = () => {
         this.source = axios.CancelToken.source();
         this.fetchEventTable();
-    }
+    };
 
     componentWillUnmount() {
         this.source.cancel("unmounted");
@@ -424,66 +436,66 @@ export class ServerEventTableWizard extends React.Component {
 
     componentDidUpdate = (prevProps, prevState, rootNode) => {
         return false;
-    }
+    };
 
     fetchEventTable = () => {
-        api.get("v1/GetServerMonitoringState", {}, this.source.token).then(resp => {
-            let empty_table = {All: {artifacts: [], specs: {}}};
-            this.setState({tables: empty_table, current_table: empty_table.All});
+        api.get("v1/GetServerMonitoringState", {}, this.source.token).then((resp) => {
+            let empty_table = { All: { artifacts: [], specs: {} } };
+            this.setState({ tables: empty_table, current_table: empty_table.All });
 
             // Pretend this is the same as the client event
             // table. Since the server events do not do labels, just
             // make them all go under the "All" label.
-            utils.proto2tables({artifacts: resp.data}, table=>{
-                this.setState({tables: table, current_table: table.All});
+            utils.proto2tables({ artifacts: resp.data }, (table) => {
+                this.setState({ tables: table, current_table: table.All });
             });
         });
-    }
+    };
 
     // Update the artifacts in the current table.
     setArtifacts = (artifacts) => {
         let current_table = this.state.current_table;
         current_table.artifacts = artifacts;
-        this.setState({current_table: current_table});
-    }
+        this.setState({ current_table: current_table });
+    };
 
     setParameters = (params) => {
         let current_table = this.state.current_table;
         current_table.specs = params;
-        this.setState({current_table: current_table});
-    }
+        this.setState({ current_table: current_table });
+    };
 
     // Let our caller know the artifact request we created.
     launch = () => {
         let request = this.prepareRequest();
         this.props.onResolve(request.artifacts);
-    }
+    };
 
     // Build a new event table protobuf from our internal state.
     prepareRequest = () => {
         return utils.table2protobuf(this.state.tables);
-    }
+    };
 
     gotoStep = (step) => {
-        return e=>{
+        return (e) => {
             this.step.goToStep(step);
             e.preventDefault();
         };
     };
 
     gotoNextStep = () => {
-        return e=>{
+        return (e) => {
             this.step.nextStep();
             e.preventDefault();
         };
-    }
+    };
 
     gotoPrevStep = () => {
-        return e=>{
+        return (e) => {
             this.step.previousStep();
             e.preventDefault();
         };
-    }
+    };
 
     render() {
         let keymap = {
@@ -491,56 +503,69 @@ export class ServerEventTableWizard extends React.Component {
             NEXT_STEP: "ctrl+right",
             PREV_STEP: "ctrl+left",
         };
-        let handlers={
+        let handlers = {
             GOTO_LAUNCH: this.gotoStep(4),
             NEXT_STEP: this.gotoNextStep(),
             PREV_STEP: this.gotoPrevStep(),
         };
 
         return (
-            <Modal show={true}
-                   className="full-height"
-                   dialogClassName="modal-90w"
-                   enforceFocus={false}
-                   scrollable={true}
-                   onHide={this.props.onCancel}>
-              <HotKeys keyMap={keymap} handlers={handlers}><ObserveKeys>
-              <StepWizard ref={n=>this.step=n}>
-                <NewCollectionSelectArtifacts
-                  paginator={new ServerEventTablePaginator(
-                      "Select Artifacts",
-                      T("Server Event Monitoring: Select artifacts to collect on the server"),
-                      ()=>false)}
-                  artifacts={this.state.current_table.artifacts}
-                  artifactType="SERVER_EVENT"
-                  setArtifacts={this.setArtifacts}/>
+            <Modal
+                show={true}
+                className="full-height"
+                dialogClassName="modal-90w"
+                enforceFocus={false}
+                scrollable={true}
+                onHide={this.props.onCancel}
+            >
+                <HotKeys keyMap={keymap} handlers={handlers}>
+                    <ObserveKeys>
+                        <StepWizard ref={(n) => (this.step = n)}>
+                            <NewCollectionSelectArtifacts
+                                paginator={
+                                    new ServerEventTablePaginator(
+                                        "Select Artifacts",
+                                        T("Server Event Monitoring: Select artifacts to collect on the server"),
+                                        () => false
+                                    )
+                                }
+                                artifacts={this.state.current_table.artifacts}
+                                artifactType="SERVER_EVENT"
+                                setArtifacts={this.setArtifacts}
+                            />
 
-                <NewCollectionConfigParameters
-                  parameters={this.state.current_table.specs}
-                  setParameters={this.setParameters}
-                  artifacts={this.state.current_table.artifacts}
-                  setArtifacts={this.setArtifacts}
-                  paginator={new ServerEventTablePaginator(
-                      "Configure Parameters",
-                      T("Server Event Monitoring: Configure artifact parameters for server"))}
-                />
+                            <NewCollectionConfigParameters
+                                parameters={this.state.current_table.specs}
+                                setParameters={this.setParameters}
+                                artifacts={this.state.current_table.artifacts}
+                                setArtifacts={this.setArtifacts}
+                                paginator={
+                                    new ServerEventTablePaginator(
+                                        "Configure Parameters",
+                                        T("Server Event Monitoring: Configure artifact parameters for server")
+                                    )
+                                }
+                            />
 
-                <NewCollectionRequest
-                  paginator={new ServerEventTablePaginator(
-                      "Review",
-                      T("Server Event Monitoring: Review new event tables"))}
-                  request={this.prepareRequest().artifacts} />
+                            <NewCollectionRequest
+                                paginator={
+                                    new ServerEventTablePaginator(
+                                        "Review",
+                                        T("Server Event Monitoring: Review new event tables")
+                                    )
+                                }
+                                request={this.prepareRequest().artifacts}
+                            />
 
-                <NewCollectionLaunch
-                  artifacts={this.state.current_table.artifacts}
-                  paginator={new PaginationBuilder(
-                      "Launch",
-                      T("New Collection: Launch collection"))}
-                  launch={this.launch} />
-
-              </StepWizard>
-              </ObserveKeys></HotKeys>
+                            <NewCollectionLaunch
+                                artifacts={this.state.current_table.artifacts}
+                                paginator={new PaginationBuilder("Launch", T("New Collection: Launch collection"))}
+                                launch={this.launch}
+                            />
+                        </StepWizard>
+                    </ObserveKeys>
+                </HotKeys>
             </Modal>
         );
     }
-};
+}

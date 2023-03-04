@@ -16,15 +16,14 @@ a.btn.btn-default.active {
     color: #808080;
 }
 
-
 .modal-90w {
     width: 90%;
-    max-width: none!important;
+    max-width: none !important;
 }
 
 .modal-70w {
     width: 70%;
-    max-width: none!important;
+    max-width: none !important;
 }
 
 .row.react-bootstrap-table-pagination {

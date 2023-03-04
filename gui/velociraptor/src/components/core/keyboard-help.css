@@ -4,13 +4,13 @@
     width: 92%;
     top: 5%;
     height: calc(100vh - 100px);
-    opacity: .85;
+    opacity: 0.85;
     border-radius: 10px;
     z-index: 2002;
     color: #fff;
     position: fixed;
     text-align: center;
-    font-family: arial,sans-serif;
+    font-family: arial, sans-serif;
     font-weight: bold;
     background: #222 none repeat scroll 0;
     overflow: hidden;
@@ -22,17 +22,17 @@
 
 .keyboard-help-content h1 {
     color: #dd0;
-    padding-top: .8em;
+    padding-top: 0.8em;
     text-align: left;
     font-size: 2rem;
 }
 
 .keyboard-help-content .key {
     font-weight: bold;
-    padding-right: .3em;
+    padding-right: 0.3em;
     text-align: right;
     white-space: nowrap;
-    font-family: "courier new",monospace;
+    font-family: "courier new", monospace;
 }
 
 .keyboard-help-content .key .highlight {
@@ -45,10 +45,10 @@
 
 .keyboard-help-content .desc {
     font-weight: normal;
-    padding-right: .3em;
+    padding-right: 0.3em;
     text-align: left;
     vertical-align: top;
-    padding-top: .15em;
+    padding-top: 0.15em;
     white-space: nowrap;
 }
 
@@ -64,7 +64,7 @@
     white-space: nowrap;
     text-align: left;
     outline: none;
-    padding-bottom: .8ex;
+    padding-bottom: 0.8ex;
     width: 100%;
     margin-bottom: 20px;
 }
@@ -72,7 +72,7 @@
 .keyboard-help-content td.heading {
     font-size: 1.25rem;
     color: #dd0;
-    padding-top: .8em;
+    padding-top: 0.8em;
     text-align: left;
 }
 

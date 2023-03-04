@@ -1,5 +1,5 @@
-import React from 'react';
-import getStyles from './utils/getStyles';
+import React from "react";
+import getStyles from "./utils/getStyles";
 
 const PageItem = ({
     text,
@@ -18,12 +18,13 @@ const PageItem = ({
     color,
     circle,
     shadow,
-    size
+    size,
 }) => (
-        <li className={`page-item ${className !== undefined && className !== false ? className : ''}`} >
-            <a
-                style={{
-                    ...getStyles({
+    <li className={`page-item ${className !== undefined && className !== false ? className : ""}`}>
+        <a
+            style={{
+                ...getStyles(
+                    {
                         activeBgColor,
                         activeBorderColor,
                         disabledBgColor,
@@ -32,62 +33,64 @@ const PageItem = ({
                         borderColor,
                         activeColor,
                         color,
-                        disabledColor
-                    }, className),
-                    ...circleStyle(circle, size),
-                    ...shadowStyle(shadow, circle)
-
-                }}
-                className={'page-link'}
-                onClick={(e) => onClick && onClick(page, e)}
-                {...onClick ? { href: '#' } : { href: href }} >
-                {text}
-            </a>
-        </li >
-    );
+                        disabledColor,
+                    },
+                    className
+                ),
+                ...circleStyle(circle, size),
+                ...shadowStyle(shadow, circle),
+            }}
+            className={"page-link"}
+            onClick={(e) => onClick && onClick(page, e)}
+            {...(onClick ? { href: "#" } : { href: href })}
+        >
+            {text}
+        </a>
+    </li>
+);
 
 const circleStyle = (isCircle, size) => {
-    if (!isCircle) return {}
-    if (size === 'lg' || size === 'sm') {
-        if (size === 'lg') {
+    if (!isCircle) return {};
+    if (size === "lg" || size === "sm") {
+        if (size === "lg") {
             return {
-                borderRadius: '30px',
-                marginLeft: '6px',
-                marginRight: '6px',
-                width: '57px',
-                height: '57px',
-                padding: '.75rem 17px'
-            }
+                borderRadius: "30px",
+                marginLeft: "6px",
+                marginRight: "6px",
+                width: "57px",
+                height: "57px",
+                padding: ".75rem 17px",
+            };
         }
-        if (size === 'sm') {
+        if (size === "sm") {
             return {
-                borderRadius: '30px',
-                marginLeft: '4px',
-                marginRight: '4px',
-                width: '36px',
-                height: '36px',
-                padding: '7px'
-            }
+                borderRadius: "30px",
+                marginLeft: "4px",
+                marginRight: "4px",
+                width: "36px",
+                height: "36px",
+                padding: "7px",
+            };
         }
     } else {
         return {
-            borderRadius: '30px',
-            marginLeft: '6px',
-            marginRight: '6px',
-            width: '45px',
-            height: '45px',
-            padding: '11px'
-        }
+            borderRadius: "30px",
+            marginLeft: "6px",
+            marginRight: "6px",
+            width: "45px",
+            height: "45px",
+            padding: "11px",
+        };
     }
-}
+};
 
 const shadowStyle = (showShadow, isCircle) => {
-    if (!showShadow) return {}
-    if (!isCircle) return {}
+    if (!showShadow) return {};
+    if (!isCircle) return {};
     return {
-        WebkitBoxShadow: '0 8px 17px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19)',
-        boxShadow: '0px 8px 17px 0px rgba(0,0,0,0.2),0px 6px 20px 0px rgba(0,0,0,0.19)'
-    }
-}
+        WebkitBoxShadow: "0 8px 17px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19)",
+        boxShadow: "0px 8px 17px 0px rgba(0,0,0,0.2),0px 6px 20px 0px rgba(0,0,0,0.19)",
+    };
+};
 
 export default PageItem;

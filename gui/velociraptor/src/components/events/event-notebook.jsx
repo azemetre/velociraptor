@@ -1,16 +1,15 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import axios from 'axios';
-import api from '../core/api-service.jsx';
-import NotebookRenderer from '../notebooks/notebook-renderer.jsx';
-import _ from 'lodash';
+import React from "react";
+import PropTypes from "prop-types";
+import axios from "axios";
+import api from "../core/api-service.jsx";
+import NotebookRenderer from "../notebooks/notebook-renderer.jsx";
+import _ from "lodash";
 
 const POLL_TIME = 5000;
 
-export const get_notebook_id = (artifact, client_id)=>{
+export const get_notebook_id = (artifact, client_id) => {
     return "N.E." + artifact + "-" + client_id;
 };
-
 
 export default class EventNotebook extends React.Component {
     static propTypes = {
@@ -23,25 +22,23 @@ export default class EventNotebook extends React.Component {
         notebook: {},
         notebook_id: "",
         loading: true,
-    }
+    };
 
     componentDidMount = () => {
         this.source = axios.CancelToken.source();
         this.interval = setInterval(this.fetchNotebooks, POLL_TIME);
         this.fetchNotebooks();
-    }
+    };
 
     componentDidUpdate = (prevProps, prevState, rootNode) => {
-        let current_notebook_id = get_notebook_id(
-            this.props.artifact, this.props.client_id);
-        let prev_notebook_id = get_notebook_id(
-            prevProps.artifact, prevProps.client_id);
+        let current_notebook_id = get_notebook_id(this.props.artifact, this.props.client_id);
+        let prev_notebook_id = get_notebook_id(prevProps.artifact, prevProps.client_id);
         if (prev_notebook_id !== current_notebook_id) {
             // Re-render the table if the hunt id changes.
             this.fetchNotebooks();
-        };
+        }
         return false;
-    }
+    };
 
     componentWillUnmount() {
         this.source.cancel();
@@ -53,17 +50,20 @@ export default class EventNotebook extends React.Component {
             return;
         }
 
-        let notebook_id = get_notebook_id(this.props.artifact,
-                                          this.props.client_id);
-        this.setState({loading: true});
-        api.get("v1/GetNotebooks", {
-            notebook_id: notebook_id,
-        }, this.source.token).then(response=>{
+        let notebook_id = get_notebook_id(this.props.artifact, this.props.client_id);
+        this.setState({ loading: true });
+        api.get(
+            "v1/GetNotebooks",
+            {
+                notebook_id: notebook_id,
+            },
+            this.source.token
+        ).then((response) => {
             if (response.cancel) return;
             let notebooks = response.data.items || [];
 
             if (notebooks.length > 0) {
-                this.setState({notebook: notebooks[0], loading: false});
+                this.setState({ notebook: notebooks[0], loading: false });
                 return;
             }
 
@@ -79,14 +79,14 @@ export default class EventNotebook extends React.Component {
                 // Hunt notebooks are all public.
                 public: true,
                 env: [
-                    {key: "ArtifactName", value: this.props.artifact},
-                    {key: "ClientId", value: this.props.client_id},
-                    {key: "StartTime", value: JSON.stringify(this.props.start_time)},
-                    {key: "NotebookId", value: notebook_id},
+                    { key: "ArtifactName", value: this.props.artifact },
+                    { key: "ClientId", value: this.props.client_id },
+                    { key: "StartTime", value: JSON.stringify(this.props.start_time) },
+                    { key: "NotebookId", value: notebook_id },
                 ],
             };
 
-            api.post('v1/NewNotebook', request, this.source.token).then((response) => {
+            api.post("v1/NewNotebook", request, this.source.token).then((response) => {
                 if (response.cancel) return;
                 let cell_metadata = response.data && response.data.cell_metadata;
                 if (_.isEmpty(cell_metadata)) {
@@ -96,14 +96,9 @@ export default class EventNotebook extends React.Component {
                 this.fetchNotebooks();
             });
         });
-    }
+    };
 
     render() {
-        return (
-            <NotebookRenderer
-              notebook={this.state.notebook}
-              fetchNotebooks={this.fetchNotebooks}
-            />
-        );
+        return <NotebookRenderer notebook={this.state.notebook} fetchNotebooks={this.fetchNotebooks} />;
     }
-};
+}

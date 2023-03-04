@@ -1,11 +1,11 @@
-import './client-link.css';
+import "./client-link.css";
 
-import React from 'react';
-import PropTypes from 'prop-types';
-import Button from 'react-bootstrap/Button';
-import { withRouter }  from "react-router-dom";
+import React from "react";
+import PropTypes from "prop-types";
+import Button from "react-bootstrap/Button";
+import { withRouter } from "react-router-dom";
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 class ClientLink extends React.Component {
     static propTypes = {
@@ -13,23 +13,25 @@ class ClientLink extends React.Component {
     };
 
     link = () => {
-        this.props.history.push('/host/' + this.props.client_id);
-    }
+        this.props.history.push("/host/" + this.props.client_id);
+    };
 
     render() {
         return (
             <>
-              <Button size="sm" className="client-link"
-                      id={this.props.client_id}
-                      onClick={this.link}
-                      variant="outline-info">
-                <FontAwesomeIcon icon="external-link-alt"/>
-                <span className="button-label">{ this.props.client_id }</span>
-              </Button>
+                <Button
+                    size="sm"
+                    className="client-link"
+                    id={this.props.client_id}
+                    onClick={this.link}
+                    variant="outline-info"
+                >
+                    <FontAwesomeIcon icon="external-link-alt" />
+                    <span className="button-label">{this.props.client_id}</span>
+                </Button>
             </>
         );
     }
-};
-
+}
 
 export default withRouter(ClientLink);

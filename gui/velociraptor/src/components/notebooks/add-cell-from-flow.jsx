@@ -1,44 +1,47 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from "react";
+import PropTypes from "prop-types";
 
-import api from '../core/api-service.jsx';
-import Modal from 'react-bootstrap/Modal';
-import BootstrapTable from 'react-bootstrap-table-next';
-import filterFactory from 'react-bootstrap-table2-filter';
-import Button from 'react-bootstrap/Button';
-import VeloClientSearch from '../clients/search.jsx';
-import T from '../i8n/i8n.jsx';
+import api from "../core/api-service.jsx";
+import Modal from "react-bootstrap/Modal";
+import BootstrapTable from "react-bootstrap-table-next";
+import filterFactory from "react-bootstrap-table2-filter";
+import Button from "react-bootstrap/Button";
+import VeloClientSearch from "../clients/search.jsx";
+import T from "../i8n/i8n.jsx";
 
-import { getClientColumns } from '../clients/clients-list.jsx';
-import { getFlowColumns } from '../flows/flows-list.jsx';
-import axios from 'axios';
-
+import { getClientColumns } from "../clients/clients-list.jsx";
+import { getFlowColumns } from "../flows/flows-list.jsx";
+import axios from "axios";
 
 export default class AddCellFromFlowDialog extends React.Component {
     static propTypes = {
         closeDialog: PropTypes.func.isRequired,
         addCell: PropTypes.func,
-    }
+    };
 
     componentDidMount = () => {
         this.source = axios.CancelToken.source();
         this.setSearch("all");
-    }
+    };
 
     componentWillUnmount() {
         this.source.cancel("unmounted");
     }
 
     setSearch = (query) => {
-        api.get('/v1/SearchClients', {
-            query: query,
-            limit: 50,
-        }, this.source.token).then(resp => {
+        api.get(
+            "/v1/SearchClients",
+            {
+                query: query,
+                limit: 50,
+            },
+            this.source.token
+        ).then((resp) => {
             let items = resp.data && resp.data.items;
             items = items || [];
-            this.setState({loading: false, clients: items});
+            this.setState({ loading: false, clients: items });
         });
-    }
+    };
 
     addCellFromFlow = (flow) => {
         let client_id = flow.client_id;
@@ -46,33 +49,36 @@ export default class AddCellFromFlowDialog extends React.Component {
         var query = "SELECT * \nFROM source(\n";
         var sources = flow["artifacts_with_results"] || flow["request"]["artifacts"];
         query += "    artifact='" + sources[0] + "',\n";
-        for (var i=1; i<sources.length; i++) {
+        for (var i = 1; i < sources.length; i++) {
             query += "    -- artifact='" + sources[i] + "',\n";
         }
-        query += "    client_id='" + client_id + "', flow_id='" +
-            flow_id + "')\nLIMIT 50\n";
+        query += "    client_id='" + client_id + "', flow_id='" + flow_id + "')\nLIMIT 50\n";
 
         this.props.addCell(query, "VQL");
         this.props.closeDialog();
-    }
+    };
 
     fetchFlows = (selectedClient) => {
         let client_id = selectedClient.client_id;
-        api.get("v1/GetClientFlows/" + client_id, {
-            count: 100,
-            offset: 0,
-        }, this.source.token).then(response=>{
+        api.get(
+            "v1/GetClientFlows/" + client_id,
+            {
+                count: 100,
+                offset: 0,
+            },
+            this.source.token
+        ).then((response) => {
             let flows = response.data.items || [];
-            this.setState({flows: flows, selectedClient: selectedClient});
+            this.setState({ flows: flows, selectedClient: selectedClient });
         });
-    }
+    };
 
     state = {
         loading: false,
         clients: [],
         flows: [],
         selectedClient: null,
-    }
+    };
 
     renderClients() {
         const selectRow = {
@@ -84,25 +90,25 @@ export default class AddCellFromFlowDialog extends React.Component {
         };
 
         let columns = getClientColumns();
-        columns[1] = {dataField: "client_id", text: "Client ID"};
+        columns[1] = { dataField: "client_id", text: "Client ID" };
 
         return (
             <>
-              <VeloClientSearch setSearch={this.setSearch}/>
-              <div className="no-margins selectable">
-                <BootstrapTable
-                  hover
-                  condensed
-                  keyField="client_id"
-                  bootstrap4
-                  headerClasses="alert alert-secondary"
-                  bodyClasses="fixed-table-body"
-                  data={this.state.clients}
-                  columns={columns}
-                  filter={ filterFactory() }
-                  selectRow={ selectRow }
-                />
-              </div>
+                <VeloClientSearch setSearch={this.setSearch} />
+                <div className="no-margins selectable">
+                    <BootstrapTable
+                        hover
+                        condensed
+                        keyField="client_id"
+                        bootstrap4
+                        headerClasses="alert alert-secondary"
+                        bodyClasses="fixed-table-body"
+                        data={this.state.clients}
+                        columns={columns}
+                        filter={filterFactory()}
+                        selectRow={selectRow}
+                    />
+                </div>
             </>
         );
     }
@@ -119,48 +125,45 @@ export default class AddCellFromFlowDialog extends React.Component {
         let columns = getFlowColumns(this.state.selectedClient.client_id);
         return (
             <>
-              <div className="no-margins selectable">
-                <BootstrapTable
-                  hover
-                  condensed
-                  keyField="session_id"
-                  bootstrap4
-                  headerClasses="alert alert-secondary"
-                  bodyClasses="fixed-table-body"
-                  data={this.state.flows}
-                  columns={columns}
-                  filter={ filterFactory() }
-                  selectRow={ selectRow }
-                />
-              </div>
+                <div className="no-margins selectable">
+                    <BootstrapTable
+                        hover
+                        condensed
+                        keyField="session_id"
+                        bootstrap4
+                        headerClasses="alert alert-secondary"
+                        bodyClasses="fixed-table-body"
+                        data={this.state.flows}
+                        columns={columns}
+                        filter={filterFactory()}
+                        selectRow={selectRow}
+                    />
+                </div>
             </>
         );
     }
 
     render() {
         return (
-            <Modal show={true}
-                   size="lg"
-                   className="full-height"
-                   dialogClassName="modal-90w"
-                   onHide={this.props.closeDialog} >
-              <Modal.Header closeButton>
-                <Modal.Title>{T("Add cell from Flow")}</Modal.Title>
-              </Modal.Header>
-              <Modal.Body>
-                {!this.state.selectedClient ?
-                 this.renderClients() : this.renderFlows()}
-              </Modal.Body>
-              <Modal.Footer>
-                <Button variant="secondary"
-                        onClick={this.props.closeDialog}>
-                  {T("Cancel")}
-                </Button>
-                <Button variant="primary"
-                        onClick={this.addCellFromHunt}>
-                  {T("Submit")}
-                </Button>
-              </Modal.Footer>
+            <Modal
+                show={true}
+                size="lg"
+                className="full-height"
+                dialogClassName="modal-90w"
+                onHide={this.props.closeDialog}
+            >
+                <Modal.Header closeButton>
+                    <Modal.Title>{T("Add cell from Flow")}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>{!this.state.selectedClient ? this.renderClients() : this.renderFlows()}</Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={this.props.closeDialog}>
+                        {T("Cancel")}
+                    </Button>
+                    <Button variant="primary" onClick={this.addCellFromHunt}>
+                        {T("Submit")}
+                    </Button>
+                </Modal.Footer>
             </Modal>
         );
     }

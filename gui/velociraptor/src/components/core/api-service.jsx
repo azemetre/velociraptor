@@ -1,48 +1,48 @@
-import axios from 'axios';
+import axios from "axios";
 
-import _ from 'lodash';
-import qs from 'qs';
-import axiosRetry from 'axios-retry';
+import _ from "lodash";
+import qs from "qs";
+import axiosRetry from "axios-retry";
 
 // The following is copied from axios-retry to avoid a bug "cannot
 // read properties of undefined (reading 'request')"
 const denyList = new Set([
-        'ENOTFOUND',
-        'ENETUNREACH',
+    "ENOTFOUND",
+    "ENETUNREACH",
 
-        // SSL errors from
-        // https://github.com/nodejs/node/blob/fc8e3e2cdc521978351de257030db0076d79e0ab/src/crypto/crypto_common.cc#L301-L328
-        'UNABLE_TO_GET_ISSUER_CERT',
-        'UNABLE_TO_GET_CRL',
-        'UNABLE_TO_DECRYPT_CERT_SIGNATURE',
-        'UNABLE_TO_DECRYPT_CRL_SIGNATURE',
-        'UNABLE_TO_DECODE_ISSUER_PUBLIC_KEY',
-        'CERT_SIGNATURE_FAILURE',
-        'CRL_SIGNATURE_FAILURE',
-        'CERT_NOT_YET_VALID',
-        'CERT_HAS_EXPIRED',
-        'CRL_NOT_YET_VALID',
-        'CRL_HAS_EXPIRED',
-        'ERROR_IN_CERT_NOT_BEFORE_FIELD',
-        'ERROR_IN_CERT_NOT_AFTER_FIELD',
-        'ERROR_IN_CRL_LAST_UPDATE_FIELD',
-        'ERROR_IN_CRL_NEXT_UPDATE_FIELD',
-        'OUT_OF_MEM',
-        'DEPTH_ZERO_SELF_SIGNED_CERT',
-        'SELF_SIGNED_CERT_IN_CHAIN',
-        'UNABLE_TO_GET_ISSUER_CERT_LOCALLY',
-        'UNABLE_TO_VERIFY_LEAF_SIGNATURE',
-        'CERT_CHAIN_TOO_LONG',
-        'CERT_REVOKED',
-        'INVALID_CA',
-        'PATH_LENGTH_EXCEEDED',
-        'INVALID_PURPOSE',
-        'CERT_UNTRUSTED',
-        'CERT_REJECTED',
-        'HOSTNAME_MISMATCH'
+    // SSL errors from
+    // https://github.com/nodejs/node/blob/fc8e3e2cdc521978351de257030db0076d79e0ab/src/crypto/crypto_common.cc#L301-L328
+    "UNABLE_TO_GET_ISSUER_CERT",
+    "UNABLE_TO_GET_CRL",
+    "UNABLE_TO_DECRYPT_CERT_SIGNATURE",
+    "UNABLE_TO_DECRYPT_CRL_SIGNATURE",
+    "UNABLE_TO_DECODE_ISSUER_PUBLIC_KEY",
+    "CERT_SIGNATURE_FAILURE",
+    "CRL_SIGNATURE_FAILURE",
+    "CERT_NOT_YET_VALID",
+    "CERT_HAS_EXPIRED",
+    "CRL_NOT_YET_VALID",
+    "CRL_HAS_EXPIRED",
+    "ERROR_IN_CERT_NOT_BEFORE_FIELD",
+    "ERROR_IN_CERT_NOT_AFTER_FIELD",
+    "ERROR_IN_CRL_LAST_UPDATE_FIELD",
+    "ERROR_IN_CRL_NEXT_UPDATE_FIELD",
+    "OUT_OF_MEM",
+    "DEPTH_ZERO_SELF_SIGNED_CERT",
+    "SELF_SIGNED_CERT_IN_CHAIN",
+    "UNABLE_TO_GET_ISSUER_CERT_LOCALLY",
+    "UNABLE_TO_VERIFY_LEAF_SIGNATURE",
+    "CERT_CHAIN_TOO_LONG",
+    "CERT_REVOKED",
+    "INVALID_CA",
+    "PATH_LENGTH_EXCEEDED",
+    "INVALID_PURPOSE",
+    "CERT_UNTRUSTED",
+    "CERT_REJECTED",
+    "HOSTNAME_MISMATCH",
 ]);
 
-const _isRetryAllowed = error=> !denyList.has(error && error.code);
+const _isRetryAllowed = (error) => !denyList.has(error && error.code);
 
 // https://github.com/softonic/axios-retry/issues/87
 function retryDelay(retryNumber = 0) {
@@ -53,96 +53,102 @@ function retryDelay(retryNumber = 0) {
 }
 
 function isRetryableError(error) {
-  return error.code !== 'ECONNABORTED' && (!error.response || (
-      error.response.status >= 500 && error.response.status <= 599));
+    return (
+        error.code !== "ECONNABORTED" &&
+        (!error.response || (error.response.status >= 500 && error.response.status <= 599))
+    );
 }
 
 function isNetworkError(error) {
-  return !error.response && Boolean(error.code) && // Prevents retrying cancelled requests
-  error.code !== 'ECONNABORTED' && // Prevents retrying timed out requests
-  _isRetryAllowed(error); // Prevents retrying unsafe errors
+    return (
+        !error.response &&
+        Boolean(error.code) && // Prevents retrying cancelled requests
+        error.code !== "ECONNABORTED" && // Prevents retrying timed out requests
+        _isRetryAllowed(error)
+    ); // Prevents retrying unsafe errors
 }
 
-var IDEMPOTENT_HTTP_METHODS = ['get', 'head', 'options', 'put', 'delete'];
+var IDEMPOTENT_HTTP_METHODS = ["get", "head", "options", "put", "delete"];
 
 function isIdempotentRequestError(error) {
-  if (!error.config) {
-      // Cannot determine if the request can be retried
-      return false;
-  }
+    if (!error.config) {
+        // Cannot determine if the request can be retried
+        return false;
+    }
 
-  return isRetryableError(error) && IDEMPOTENT_HTTP_METHODS.indexOf(error.config.method) !== -1;
+    return isRetryableError(error) && IDEMPOTENT_HTTP_METHODS.indexOf(error.config.method) !== -1;
 }
 
 function isNetworkOrIdempotentRequestError(error) {
-  return isNetworkError(error) || isIdempotentRequestError(error);
+    return isNetworkError(error) || isIdempotentRequestError(error);
 }
 
 // Retry simple network errors
 function simpleNetworkErrorCheck(error) {
-  if ((error && error.message) === 'Network Error') {
-    return true;
-  } else {
-      return isNetworkOrIdempotentRequestError(error);
-  }
+    if ((error && error.message) === "Network Error") {
+        return true;
+    } else {
+        return isNetworkOrIdempotentRequestError(error);
+    }
 }
 
 axiosRetry(axios, {
-  retries: 3,
-  retryDelay,
+    retries: 3,
+    retryDelay,
 
-  retryCondition: simpleNetworkErrorCheck,
+    retryCondition: simpleNetworkErrorCheck,
 });
 
 let base_path = window.base_path || "";
 if (base_path === "") {
-  let pname = window.location.pathname;
-  base_path = pname.replace(/\/app.*$/, "");
+    let pname = window.location.pathname;
+    base_path = pname.replace(/\/app.*$/, "");
 }
 
 // In development we only support running from /
-if (!process.env.NODE_ENV || process.env.NODE_ENV === 'development') {
+if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
     base_path = "";
 }
 
 let api_handlers = base_path + "/api/";
 
-const handle_error = err=>{
+const handle_error = (err) => {
     if (axios.isCancel(err)) {
-        return {data: {}, cancel: true};
-    };
+        return { data: {}, cancel: true };
+    }
 
     if (err.response && err.response.status === 401) {
         const redirectTemplate = window.globals.AuthRedirectTemplate || "";
         if (redirectTemplate !== "") {
-            const instantiatedTemplate = redirectTemplate.replaceAll('%LOCATION%', encodeURIComponent(window.location.href));
+            const instantiatedTemplate = redirectTemplate.replaceAll(
+                "%LOCATION%",
+                encodeURIComponent(window.location.href)
+            );
             window.location.assign(instantiatedTemplate);
-            return {data: {}, cancel: false};
+            return { data: {}, cancel: false };
         }
     }
 
     let data = err.response && err.response.data;
     data = data || err.message;
 
-    const contentType = err.response && err.response.headers &&
-          err.response.headers["content-type"];
+    const contentType = err.response && err.response.headers && err.response.headers["content-type"];
     if (data instanceof Blob) {
         return data.text();
-    } else if(data.message) {
+    } else if (data.message) {
         data = data.message;
-    } else if(contentType === "text/html") {
-      data = "";
+    } else if (contentType === "text/html") {
+        data = "";
     }
 
     // Call all the registered hooks.
-    _.each(hooks, h=>h("Error: " + data));
+    _.each(hooks, (h) => h("Error: " + data));
     throw err;
 };
 
-
-const get = function(url, params, cancel_token) {
+const get = function (url, params, cancel_token) {
     return axios({
-        method: 'get',
+        method: "get",
         url: api_handlers + url,
         params: params,
         headers: {
@@ -150,20 +156,22 @@ const get = function(url, params, cancel_token) {
             "Grpc-Metadata-OrgId": window.globals.OrgId || "root",
         },
         cancelToken: cancel_token,
-    }).then(response=>{
-        // Update the csrf token.
-        let token = response.headers["x-csrf-token"];
-        if (token && token.length > 0) {
-            window.CsrfToken = token;
-        }
-        return response;
-    }).catch(handle_error);
+    })
+        .then((response) => {
+            // Update the csrf token.
+            let token = response.headers["x-csrf-token"];
+            if (token && token.length > 0) {
+                window.CsrfToken = token;
+            }
+            return response;
+        })
+        .catch(handle_error);
 };
 
-const get_blob = function(url, params, cancel_token) {
+const get_blob = function (url, params, cancel_token) {
     return axios({
-        responseType: 'blob',
-        method: 'get',
+        responseType: "blob",
+        method: "get",
         url: api_handlers + url,
         params: params,
         headers: {
@@ -171,48 +179,52 @@ const get_blob = function(url, params, cancel_token) {
             "Grpc-Metadata-OrgId": window.globals.OrgId || "root",
         },
         cancelToken: cancel_token,
-    }).then((blob) => {
-        var arrayPromise = new Promise(function(resolve) {
-            var reader = new FileReader();
+    })
+        .then((blob) => {
+            var arrayPromise = new Promise(function (resolve) {
+                var reader = new FileReader();
 
-            reader.onloadend = function() {
-                resolve(reader.result);
-            };
+                reader.onloadend = function () {
+                    resolve(reader.result);
+                };
 
-            reader.readAsArrayBuffer(blob.data);
+                reader.readAsArrayBuffer(blob.data);
+            });
+
+            return arrayPromise;
+        })
+        .catch((err) => {
+            let data = err.response && err.response.data;
+            if (data) {
+                data.text().then((message) => _.each(hooks, (h) => h("Error: " + message)));
+            }
+            return "";
         });
-
-        return arrayPromise;
-    }).catch(err=>{
-        let data = err.response && err.response.data;
-        if(data) {
-            data.text().then((message)=>_.each(hooks, h=>h("Error: " + message)));
-        }
-        return "";
-    });
 };
 
-const post = function(url, params, cancel_token) {
+const post = function (url, params, cancel_token) {
     return axios({
-        method: 'post',
+        method: "post",
         url: api_handlers + url,
         data: params,
         cancelToken: cancel_token,
         headers: {
             "X-CSRF-Token": window.CsrfToken,
             "Grpc-Metadata-OrgId": window.globals.OrgId || "root",
-        }
-    }).then(response=>{
-        // Update the csrf token.
-        let token = response.headers["x-csrf-token"];
-        if (token && token.length > 0) {
-            window.CsrfToken = token;
-        }
-        return response;
-    }).catch(handle_error);
+        },
+    })
+        .then((response) => {
+            // Update the csrf token.
+            let token = response.headers["x-csrf-token"];
+            if (token && token.length > 0) {
+                window.CsrfToken = token;
+            }
+            return response;
+        })
+        .catch(handle_error);
 };
 
-const upload = function(url, files, params) {
+const upload = function (url, files, params) {
     var fd = new FormData();
     _.each(files, (v, k) => {
         fd.append(k, v);
@@ -221,44 +233,46 @@ const upload = function(url, files, params) {
     fd.append("_params_", JSON.stringify(params || {}));
 
     return axios({
-        method: 'post',
+        method: "post",
         url: api_handlers + url,
         data: fd,
         headers: {
             "X-CSRF-Token": window.CsrfToken,
             "Grpc-Metadata-OrgId": window.globals.OrgId || "root",
-        }
+        },
     }).catch(handle_error);
 };
 
 // Prepare a suitable href link for <a>
-const href = function(url, params, options) {
+const href = function (url, params, options) {
     params = params || {};
-    Object.assign(params, {org_id: window.globals.OrgId || "root"});
+    Object.assign(params, { org_id: window.globals.OrgId || "root" });
 
     options = options || {};
-    Object.assign(options, {indices: false});
+    Object.assign(options, { indices: false });
 
     return base_path + url + "?" + qs.stringify(params, options);
 };
 
-const delete_req = function(url, params, cancel_token) {
+const delete_req = function (url, params, cancel_token) {
     return axios({
-        method: 'delete',
+        method: "delete",
         url: api_handlers + url,
         params: params,
         cancelToken: cancel_token,
         headers: {
             "X-CSRF-Token": window.CsrfToken,
-        }
-    }).then(response=>{
-        // Update the csrf token.
-        let token = response.headers["x-csrf-token"];
-        if (token && token.length > 0) {
-            window.CsrfToken = token;
-        }
-        return response;
-    }).catch(handle_error);
+        },
+    })
+        .then((response) => {
+            // Update the csrf token.
+            let token = response.headers["x-csrf-token"];
+            if (token && token.length > 0) {
+                window.CsrfToken = token;
+            }
+            return response;
+        })
+        .catch(handle_error);
 };
 
 var hooks = [];

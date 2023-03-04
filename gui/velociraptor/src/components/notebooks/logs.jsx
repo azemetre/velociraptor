@@ -1,7 +1,7 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import Modal from 'react-bootstrap/Modal';
-import FlowLogs from '../flows/flow-logs.jsx';
+import React, { Component } from "react";
+import PropTypes from "prop-types";
+import Modal from "react-bootstrap/Modal";
+import FlowLogs from "../flows/flow-logs.jsx";
 
 class ViewCellLogsTable extends FlowLogs {
     static propTypes = {
@@ -12,18 +12,17 @@ class ViewCellLogsTable extends FlowLogs {
     state = {
         level_filter: "all",
         level_column: "Level",
-    }
+    };
 
-    getVersion = ()=>{}
+    getVersion = () => {};
 
-    getParams = ()=>{
-        return  {
-            notebook_id: this.props.notebook_metadata &&
-                this.props.notebook_metadata.notebook_id,
+    getParams = () => {
+        return {
+            notebook_id: this.props.notebook_metadata && this.props.notebook_metadata.notebook_id,
             cell_id: this.props.cell && this.props.cell.cell_id,
             type: "logs",
         };
-    }
+    };
 }
 
 export default class ViewCellLogs extends Component {
@@ -35,23 +34,21 @@ export default class ViewCellLogs extends Component {
 
     render() {
         return (
-            <Modal show={true}
-                   className="full-height"
-                   dialogClassName="modal-90w"
-                   enforceFocus={false}
-                   scrollable={true}
-                   onHide={this.props.closeDialog}>
-              <Modal.Header closeButton>
-                <Modal.Title>View Cell Logs</Modal.Title>
-              </Modal.Header>
-              <Modal.Body>
-                <ViewCellLogsTable
-                  cell={this.props.cell}
-                  notebook_metadata={this.props.notebook_metadata}
-                />
-              </Modal.Body>
-              <Modal.Footer>
-              </Modal.Footer>
+            <Modal
+                show={true}
+                className="full-height"
+                dialogClassName="modal-90w"
+                enforceFocus={false}
+                scrollable={true}
+                onHide={this.props.closeDialog}
+            >
+                <Modal.Header closeButton>
+                    <Modal.Title>View Cell Logs</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <ViewCellLogsTable cell={this.props.cell} notebook_metadata={this.props.notebook_metadata} />
+                </Modal.Body>
+                <Modal.Footer></Modal.Footer>
             </Modal>
         );
     }

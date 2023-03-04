@@ -1,11 +1,11 @@
-import './snackbar.css';
+import "./snackbar.css";
 
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from "react";
+import PropTypes from "prop-types";
 
-import { withSnackbar } from 'react-simple-snackbar';
+import { withSnackbar } from "react-simple-snackbar";
 
-import api from '../core/api-service.jsx';
+import api from "../core/api-service.jsx";
 
 class Snackbar extends React.Component {
     static propTypes = {
@@ -14,24 +14,18 @@ class Snackbar extends React.Component {
 
     componentDidMount = () => {
         api.hooks.push(this.warn);
-    }
+    };
 
     warn = (message) => {
-        this.props.openSnackbar(
-            <div>{message}</div>, 5000);
+        this.props.openSnackbar(<div>{message}</div>, 5000);
     };
 
     render() {
-        return (
-            <>
-            </>
-        );
+        return <></>;
     }
-};
-
+}
 
 export default withSnackbar(Snackbar, {
-    position: 'bottom-right',
-    style: {
-
-    }});
+    position: "bottom-right",
+    style: {},
+});
