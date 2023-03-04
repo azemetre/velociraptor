@@ -34,3 +34,24 @@ different port then edit the value of `server.proxy` in vite.config.js.
 
 The node dev server will rebuild the application and automatically refresh
 it each time a source file is edited.
+
+## Setting up `prettier`
+
+In order format GUI files, you may need to install
+[prettier](https://prettier.io/) as an extension for your editor or IDE. A list
+of prettier extensions:
+
+* [VS Code](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
+* [IntelliJ IDEA](https://www.jetbrains.com/help/idea/prettier.html#prettier_before_you_start)
+* [neovim via mason.nvim](https://github.com/williamboman/mason.nvim/blob/main/PACKAGES.md#prettier)
+
+If you're using VS Code you can modify your `settings.json` to format on save
+with the following:
+
+```json
+{
+  "prettier.configPath": ".prettierrc.json",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true
+}
+```
